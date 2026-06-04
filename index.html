@@ -65,6 +65,8 @@ body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);m
 .fchip.tag-kat.active{border-color:#80e080;color:#80e080;background:#1a3d1a}
 .fchip.tag-akc.active{border-color:#ffe060;color:#ffe060;background:#3d3a1a}
 .fchip.tag-sz.active{border-color:#8888ff;color:#8888ff;background:#1a1a3d}
+.fchip.tag-tno.active{border-color:#ff6060;color:#ff6060;background:#4d1a1a}
+.fchip.tag-t.active{border-color:#ffaa60;color:#ffaa60;background:#3d2510}
 .fchip-reset{color:var(--red)!important;border-color:var(--red)!important}
 .fchip-reset:hover{background:#3d1010!important}
 /* BUTTONS */
@@ -132,7 +134,7 @@ tr.hidden-row{display:none}
 .chip-to{background:#3d1a1a;color:#ff8888}.chip-hash{background:#3d2a1a;color:#ffa060}
 .chip-brak{background:#3a1a3d;color:#d488ff}.chip-nar{background:#1a3d3d;color:#60ddd0}
 .chip-kat{background:#1a3d1a;color:#80e080}.chip-akc{background:#3d3a1a;color:#ffe060}
-.chip-sz{background:#1a1a3d;color:#8888ff}
+.chip-sz{background:#1a1a3d;color:#8888ff}.chip-tno{background:#4d1a1a;color:#ff6060}.chip-t{background:#3d2510;color:#ffaa60}
 /* AI REC */
 .ai-rec-cell{max-width:200px;font-size:10px;color:var(--text2);line-height:1.4}
 .rec-badge{display:inline-block;margin-bottom:2px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
@@ -261,12 +263,13 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
         <button class="btn btn-ghost btn-sm" onclick="deselectAll()">✕ Снять</button>
         <button class="btn btn-success btn-sm" onclick="sendToVyvod()">📤 На вывод</button>
         <button class="btn btn-teal btn-sm" onclick="saveAsReport()">+ Отчёт</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSelected()">✕ Удалить</button>
         <div class="sep"></div>
         <button class="btn btn-ai btn-sm" onclick="openAiPanel()">🤖 ИИ-рекомендации</button>
         <button class="btn btn-ai btn-sm" onclick="autoMarkVyvod()">🎯 ИИ-автовывод</button>
         <button class="btn btn-orange btn-sm" onclick="formulaAutoVyvod()">⚡ Авто-вывод</button>
         <div class="sep"></div>
-        <button class="btn btn-ghost btn-sm" onclick="showHidden()" id="btnShowHidden" style="display:none">👁 Скрытые (<span id="hiddenCount">0</span>)</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleShowDeleted()" id="btnShowDeleted" style="display:none">🗑 Удалённые (0)</button>
         <button class="btn btn-ghost btn-sm" onclick="exportMain()">↓ Excel</button>
       </div>
       <!-- FILTER CHIPS -->
@@ -333,7 +336,8 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 let allItems=[], displayItems=[], vyvodItems=[], customReports=[];
 let currentTab='main', currentMode='ABCD_money';
 let activeFilters={cats:new Set(), xyz:new Set(), stale:new Set(), tags:new Set()};
-let hiddenIds=new Set(), selectedIds=new Set();
+let hiddenIds=new Set(), selectedIds=new Set(), deletedIds=new Set();
+let showDeleted=true; // показывать удалённые зачёркнутыми
 let aiRecsMap={};
 let sortCol=null, sortDir=-1;
 let modalCallback=null;
@@ -480,7 +484,11 @@ function mergeData(sd,od){
       const q=Math.max(0,md.qty),r=Math.max(0,md.rev);
       tRev+=r;tQty+=q;mQty.push(q);mRev.push(r);
     }
-    const aqm=tQty/mc,arm=tRev/mc;
+    // Среднее только по месяцам с продажами (нули = товара не было, не спрос нулевой)
+    const activeMo=mQty.filter(q=>q>0).length||1;
+    const aqm=tQty/activeMo;
+    const activeRev=mRev.filter(r=>r>0).length||1;
+    const arm=tRev/activeRev;
     const cs=o.currentStock||0;
     const sm=aqm>0?cs/aqm:(cs>0?999:0);
     const cv=calcCV(mQty);
@@ -508,10 +516,15 @@ function calcABCD(items,field,cf){
   for(const it of sorted){cum+=it[field]/total;ic[it.id]=cum<=.5?'A':cum<=.8?'B':cum<=.95?'C':'D';}
   items.forEach(it=>it[cf]=ic[it.id]||'D');
 }
-function calcXYZ(items){items.forEach(it=>it.catXYZ=it.cv<.1?'X':it.cv<.25?'Y':'Z');}
+function calcXYZ(items){items.forEach(it=>it.catXYZ=it.cv<.35?'X':it.cv<.75?'Y':'Z');}
 function detectTags(name){
   const n=name.toUpperCase();const t=[];
-  if(/( ТО|\/ТО|^ТО$)/.test(n)||n.endsWith(' ТО')||n.includes(' ТО ')||n.includes('/ТО'))t.push('ТО');
+  // ТНО проверяем первым (длиннее — чтобы не перехватил ТО)
+  if(n.includes('ТНО'))t.push('ТНО');
+  // ТО: отдельное слово или после / — но не часть ТНО
+  else if(/[\s\/]ТО($|[\s\/])/.test(' '+n+' ')||n.endsWith(' ТО')||n.endsWith('/ТО'))t.push('ТО');
+  // Буква Т в конце или как отдельный суффикс (кроме ТО и ТНО)
+  if(!t.includes('ТО')&&!t.includes('ТНО')&&(/[\s\/]Т($|[\s])/.test(' '+name+' ')||name.endsWith(' Т')||name.endsWith('/Т')))t.push('Т');
   if(n.includes('#'))t.push('#');
   if(n.includes('БРАК'))t.push('БРАК');
   if(n.includes('НАРЕЗКА'))t.push('Нарезка');
@@ -553,7 +566,8 @@ function resetAllFilters(){
 }
 function applyFilters(){
   const vyvodIds=new Set(vyvodItems.map(v=>v.id));
-  displayItems=allItems.filter(it=>!vyvodIds.has(it.id)&&itemMatchesFilters(it));
+  // Удалённые не участвуют в фильтрации (они всегда в конце таблицы если showDeleted)
+  displayItems=allItems.filter(it=>!vyvodIds.has(it.id)&&!deletedIds.has(it.id)&&itemMatchesFilters(it));
 }
 
 // ==================== RENDER ====================
@@ -588,7 +602,7 @@ function renderFilterChips(){
     html+=`<span class="fchip ${z.cls} ${active?'active':''}" data-ftype="stale" data-fval="${z.k}" onclick="toggleFilter('stale','${z.k}',this)">${z.l}</span>`;
   }
   html+='<span class="toolbar-label" style="margin-left:8px">Метки:</span>';
-  const tagDefs=[{k:'ТО',cls:'tag-to'},{k:'#',cls:'tag-hash'},{k:'БРАК',cls:'tag-brak'},{k:'Нарезка',cls:'tag-nar'},{k:'Каталог',cls:'tag-kat'},{k:'Акция',cls:'tag-akc'},{k:'СЗ',cls:'tag-sz'}];
+  const tagDefs=[{k:'ТО',cls:'tag-to'},{k:'ТНО',cls:'tag-tno'},{k:'Т',cls:'tag-t'},{k:'#',cls:'tag-hash'},{k:'БРАК',cls:'tag-brak'},{k:'Нарезка',cls:'tag-nar'},{k:'Каталог',cls:'tag-kat'},{k:'Акция',cls:'tag-akc'},{k:'СЗ',cls:'tag-sz'}];
   for(const t of tagDefs){
     const active=activeFilters.tags.has(t.k);
     html+=`<span class="fchip ${t.cls} ${active?'active':''}" data-ftype="tags" data-fval="${escHtml(t.k)}" onclick="toggleFilter('tags','${t.k}',this)">${escHtml(t.k)}</span>`;
@@ -597,7 +611,7 @@ function renderFilterChips(){
   fc.innerHTML=html;
 }
 function renderStats(){
-  const shown=displayItems.filter(it=>!hiddenIds.has(it.id));
+  const shown=displayItems;
   const tRev=shown.reduce((s,it)=>s+it.totalRev,0);
   const tQty=shown.reduce((s,it)=>s+it.totalQty,0);
   const tSt=shown.reduce((s,it)=>s+it.currentStock,0);
@@ -677,8 +691,8 @@ function renderTable(){
     ${hasAI?'<th>ИИ-рек.</th>':''}
     <th>Действия</th>
   </tr></thead><tbody>`;
+  // Сначала активные строки
   for(const it of items){
-    if(hiddenIds.has(it.id)){html+=`<tr id="row_${it.id}" class="hidden-row"><td colspan="12"></td></tr>`;continue;}
     const sel=selectedIds.has(it.id);
     const sc=getStaleCls(it.staleMonths);
     const rec=aiRecsMap[it.id];
@@ -696,11 +710,34 @@ function renderTable(){
       ${hasAI?`<td class="ai-rec-cell">${renderAiRec(rec)}</td>`:''}
       <td><div class="row-actions">
         <button class="btn btn-success btn-sm" onclick="sendOneToVyvod(${it.id})" title="На вывод">📤</button>
-        <button class="btn btn-danger btn-sm" onclick="hideOne(${it.id})" title="Скрыть">🙈</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteOne(${it.id})" title="Удалить из отчёта">✕</button>
       </div></td>
     </tr>`;
   }
+  // Удалённые строки в конце (зачёркнутые) если showDeleted
+  if(showDeleted&&deletedIds.size>0){
+    const delItems=allItems.filter(it=>deletedIds.has(it.id));
+    for(const it of delItems){
+      const rec=aiRecsMap[it.id];
+      const hasAI2=Object.keys(aiRecsMap).length>0;
+      html+=`<tr id="row_${it.id}" style="opacity:0.4">
+        <td style="width:36px;text-align:center"></td>
+        <td><div class="name-cell" style="text-decoration:line-through;color:var(--text3)">${escHtml(it.name)}</div></td>
+        <td>${it.tags.map(chipH).join(' ')}</td>
+        <td><span class="badge" style="background:var(--surface3);color:var(--text3)">—</span></td>
+        <td class="mono" style="color:var(--text3)">${fmtM(it.totalRev)}</td>
+        <td class="mono" style="color:var(--text3)">${fmtN(it.totalQty)}</td>
+        <td class="mono" style="color:var(--text3)">${fmtN(it.currentStock)}</td>
+        <td class="mono" style="color:var(--text3)">—</td>
+        <td style="color:var(--text3)">удалён</td>
+        <td></td>
+        ${hasAI2?'<td></td>':''}
+        <td><button class="btn btn-ghost btn-sm" onclick="restoreDeleted(${it.id})" title="Вернуть в отчёт">↩</button></td>
+      </tr>`;
+    }
+  }
   html+='</tbody></table>';
+  updateDeletedBtn();
   document.getElementById('tableContainer').innerHTML=html;
   updateHiddenBtn();
 }
@@ -721,7 +758,8 @@ function showChart(id){
     </div>`;
   }).join('');
   document.getElementById('chartTitle').textContent=it.name;
-  document.getElementById('chartSub').textContent=`Ср/мес: ${it.avgQtyPerMonth.toFixed(1)} шт · Остаток: ${fmtN(it.currentStock)} шт · Залежалость: ${fmtStale(it.staleMonths)} · ${it.catABCD_money}${it.catXYZ}`;
+  const activeMoCount=it.monthlyQty.filter(q=>q>0).length;
+  document.getElementById('chartSub').textContent=`Ср/мес (по акт. мес): ${it.avgQtyPerMonth.toFixed(1)} шт · Акт. мес: ${activeMoCount}/${it.months.length} · Остаток: ${fmtN(it.currentStock)} шт · Залежалость: ${fmtStale(it.staleMonths)} · ${it.catABCD_money}${it.catXYZ}`;
   document.getElementById('chartBars').innerHTML=bars;
   document.getElementById('chartOverlay').style.display='flex';
 }
@@ -810,15 +848,41 @@ function renderCustomReport(idx){
 
 // ==================== ACTIONS ====================
 function toggleSel(id,v){if(v)selectedIds.add(id);else selectedIds.delete(id);}
-function toggleAll(v){displayItems.filter(it=>!hiddenIds.has(it.id)).forEach(it=>{if(v)selectedIds.add(it.id);else selectedIds.delete(it.id);});renderTable();}
-function selectAll(){displayItems.filter(it=>!hiddenIds.has(it.id)).forEach(it=>selectedIds.add(it.id));renderTable();}
+function toggleAll(v){displayItems.filter(it=>!hiddenIds.has(it.id)&&!deletedIds.has(it.id)).forEach(it=>{if(v)selectedIds.add(it.id);else selectedIds.delete(it.id);});renderTable();}
+function selectAll(){displayItems.filter(it=>!hiddenIds.has(it.id)&&!deletedIds.has(it.id)).forEach(it=>selectedIds.add(it.id));renderTable();}
 function deselectAll(){selectedIds.clear();renderTable();}
-function hideOne(id){hiddenIds.add(id);selectedIds.delete(id);updateHiddenBtn();const r=document.getElementById('row_'+id);if(r)r.classList.add('hidden-row');}
-function showHidden(){hiddenIds.clear();updateHiddenBtn();renderTable();}
-function updateHiddenBtn(){
-  const btn=document.getElementById('btnShowHidden');
-  const cnt=document.getElementById('hiddenCount');
-  if(btn){btn.style.display=hiddenIds.size>0?'inline':'none';if(cnt)cnt.textContent=hiddenIds.size;}
+function deleteOne(id){
+  deletedIds.add(id);selectedIds.delete(id);
+  recomputeCategories();renderAll();
+}
+function restoreDeleted(id){
+  deletedIds.delete(id);
+  recomputeCategories();renderAll();
+}
+function deleteSelected(){
+  [...selectedIds].forEach(id=>deletedIds.add(id));
+  selectedIds.clear();
+  recomputeCategories();renderAll();
+}
+function recomputeCategories(){
+  // Пересчитываем ABCD только по не-удалённым позициям
+  const active=allItems.filter(it=>!deletedIds.has(it.id));
+  calcABCD(active,'totalRev','catABCD_money');
+  calcABCD(active,'totalQty','catABCD_units');
+  calcXYZ(active);
+  active.forEach(it=>it.catCombo=it.catABCD_money+it.catXYZ);
+  // Удалённым ставим D чтобы не путали
+  allItems.filter(it=>deletedIds.has(it.id)).forEach(it=>{it.catABCD_money='D';it.catABCD_units='D';it.catXYZ='Z';it.catCombo='DZ';});
+}
+function toggleShowDeleted(){
+  showDeleted=!showDeleted;
+  const btn=document.getElementById('btnShowDeleted');
+  if(btn){btn.textContent=showDeleted?`🗑 Удалённые (${deletedIds.size})`:`👁 Показать удалённые (${deletedIds.size})`;}
+  renderTable();
+}
+function updateDeletedBtn(){
+  const btn=document.getElementById('btnShowDeleted');
+  if(btn){btn.style.display=deletedIds.size>0?'inline':'none';btn.textContent=showDeleted?`🗑 Удалённые (${deletedIds.size})`:`👁 Удалённые скрыты (${deletedIds.size})`;}
 }
 function doSort(col){if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=-1;}renderTable();}
 function setMode(m){
@@ -887,21 +951,21 @@ function removeReport(idx,btn){customReports[idx]=null;btn.remove();switchTab('m
 
 // ==================== AUTO VYVOD (formula) ====================
 function formulaAutoVyvod(){
-  let cnt=0;
-  for(const it of displayItems){
-    if(hiddenIds.has(it.id)||vyvodItems.find(v=>v.id===it.id))continue;
-    // Критерии: D категория И залежалость > 12 мес, ИЛИ залежалость > 24 мес, ИЛИ нет продаж и есть остаток > 0
+  let cnt=0;const autoIds=new Set();
+  for(const it of allItems){
+    if(deletedIds.has(it.id)||vyvodItems.find(v=>v.id===it.id))continue;
     const isD=it.catABCD_money==='D';
     const noSales=it.totalQty===0&&it.currentStock>0;
     const superStale=it.staleMonths>24;
     const dAndStale=isD&&it.staleMonths>12;
-    if(noSales||superStale||dAndStale){selectedIds.add(it.id);cnt++;}
+    if(noSales||superStale||dAndStale){selectedIds.add(it.id);autoIds.add(it.id);cnt++;}
   }
   if(!cnt){alert('По формуле не найдено очевидных кандидатов');return;}
-  renderTable();
-  if(confirm(`⚡ Авто-вывод нашёл ${cnt} позиций:\n• Категория D + залежалость >12 мес\n• Залежалость >24 мес\n• Есть остаток, но нет продаж\n\nОни отмечены галочками. Проверьте и нажмите «На вывод».`)){
-    // ничего, пользователь проверит
-  }
+  // Применяем фильтр — показываем только отмеченные
+  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
+  displayItems=allItems.filter(it=>autoIds.has(it.id));
+  renderFilterChips();renderTable();
+  alert('⚡ Авто-вывод: отмечено '+cnt+' позиций\n• Категория D + залежалость >12 мес\n• Залежалость >24 мес\n• Нет продаж при наличии остатка\n\nПроверьте отмеченные и нажмите «На вывод».');
 }
 
 // ==================== AI ====================
@@ -1018,14 +1082,17 @@ function calcTrend(v){if(!v||v.length<4)return'н/д';const f=v.slice(0,~~(v.len
 
 async function autoMarkVyvod(){
   if(!Object.keys(aiRecsMap).length){alert('Сначала запустите ИИ-рекомендации');return;}
-  let cnt=0;
+  let cnt=0;const aiIds=new Set();
   for(const[id,rec]of Object.entries(aiRecsMap)){
     const n=+id;
-    if(rec.action==='Вывод'&&!hiddenIds.has(n)&&!vyvodItems.find(v=>v.id===n)){selectedIds.add(n);cnt++;}
+    if(rec.action==='Вывод'&&!deletedIds.has(n)&&!vyvodItems.find(v=>v.id===n)){selectedIds.add(n);aiIds.add(n);cnt++;}
   }
   if(!cnt){alert('ИИ не нашёл позиций для вывода');return;}
-  alert(`🎯 ИИ отметил ${cnt} позиций. Проверьте галочки и нажмите «На вывод».`);
-  renderTable();
+  // Фильтруем таблицу — только ИИ-кандидаты
+  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
+  displayItems=allItems.filter(it=>aiIds.has(it.id));
+  renderFilterChips();renderTable();
+  alert('🎯 ИИ отметил '+cnt+' позиций для вывода. Проверьте галочки и нажмите «На вывод».');
 }
 
 // ==================== EXPORT ====================
@@ -1080,7 +1147,7 @@ function hideLoading(){document.getElementById('loadingOverlay').style.display='
 // ==================== RESET ====================
 function resetApp(){
   allItems=[];displayItems=[];vyvodItems=[];customReports=[];
-  hiddenIds.clear();selectedIds.clear();aiRecsMap={};
+  hiddenIds.clear();selectedIds.clear();deletedIds.clear();aiRecsMap={};showDeleted=true;
   activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
   sortCol=null;currentMode='ABCD_money';currentTab='main';
   document.getElementById('uploadView').style.display='block';
@@ -1096,7 +1163,7 @@ function fmtM(v){if(!v)return'0';return Math.round(v).toLocaleString('ru');}
 function fmtN(v){if(!v&&v!==0)return'0';return Math.round(v).toLocaleString('ru');}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function chipH(t){const m={ТО:'chip-to','#':'chip-hash',БРАК:'chip-brak',Нарезка:'chip-nar',Каталог:'chip-kat',Акция:'chip-akc',СЗ:'chip-sz','*':'chip-hash'};return`<span class="chip ${m[t]||''}">${escHtml(t)}</span>`;}
+function chipH(t){const m={ТО:'chip-to',ТНО:'chip-tno',Т:'chip-t','#':'chip-hash',БРАК:'chip-brak',Нарезка:'chip-nar',Каталог:'chip-kat',Акция:'chip-akc',СЗ:'chip-sz','*':'chip-hash'};return`<span class="chip ${m[t]||''}">${escHtml(t)}</span>`;}
 
 // restore api key on load
 if(apiKey&&document.getElementById('apiKeyUpfront'))document.getElementById('apiKeyUpfront').value=apiKey;
