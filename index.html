@@ -485,6 +485,7 @@ function handleFile(file){
       const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
       const sn=findSheet(wb,['Продажи','продажи','Sales']);
       const on=findSheet(wb,['Остатки','остатки','Stock']);
+      const an=findSheet(wb,['Поступление','поступление','Приход','приход','Arrivals']);
       if(!sn||!on){hideLoading();alert('Не найдены вкладки «Продажи» и «Остатки»');return;}
       updateLoading('Парсю продажи...');
       setTimeout(()=>{
@@ -492,13 +493,17 @@ function handleFile(file){
         updateLoading('Парсю остатки...');
         setTimeout(()=>{
           const od=parseStock(wb.Sheets[on]);
-          updateLoading('Совмещаю...');
+          updateLoading('Парсю поступления...');
           setTimeout(()=>{
-            allItems=mergeData(sd,od);
-            hideLoading();
-            document.getElementById('uploadView').style.display='none';
-            document.getElementById('mainView').style.display='block';
-            renderAll();
+            const ad=an?parseArrivals(wb.Sheets[an]):new Map();
+            updateLoading('Совмещаю...');
+            setTimeout(()=>{
+              allItems=mergeData(sd,od,ad);
+              hideLoading();
+              document.getElementById('uploadView').style.display='none';
+              document.getElementById('mainView').style.display='block';
+              renderAll();
+            },50);
           },50);
         },50);
       },50);
@@ -509,6 +514,55 @@ function handleFile(file){
 function findSheet(wb,names){
   for(const n of names)if(wb.SheetNames.includes(n))return n;
   return wb.SheetNames.find(s=>names.some(n=>s.toLowerCase().includes(n.toLowerCase())));
+}
+
+function parseArrivals(ws){
+  // Парсит вкладку Поступление: возвращает Map<name, {lastArrivalMonthIdx, months, hasAny}>
+  // lastArrivalMonthIdx — индекс последнего месяца с приходом (0=первый месяц периода)
+  if(!ws) return new Map();
+  const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  
+  // Найти строку с заголовком (содержит даты)
+  let hdr=-1;
+  for(let i=0;i<data.length;i++){
+    const r=data[i];
+    if(r&&r[4]&&(r[4] instanceof Date||(typeof r[4]==='string'&&r[4].match(/\d{2}\.\d{2}\.\d{4}/)))){
+      hdr=i;break;
+    }
+  }
+  if(hdr<0) return new Map();
+  
+  const dateRow=data[hdr];
+  // Колонки с датами начиная с col 8 (индекс в датаРоу)
+  const dateCols=[];
+  for(let c=0;c<dateRow.length;c++){
+    const v=dateRow[c];
+    if(!v)continue;
+    if(v instanceof Date)dateCols.push({col:c,date:v});
+    else if(typeof v==='string'&&v.match(/\d{2}\.\d{2}\.\d{4}/))dateCols.push({col:c,date:pDate(v)});
+  }
+  
+  const result=new Map();
+  // Данные с hdr+3 (пропускаем "Количество" и "Приход")
+  for(let i=hdr+3;i<data.length;i++){
+    const row=data[i];
+    if(!row)continue;
+    // Наименование в col 4
+    const name=row[4]?String(row[4]).trim():null;
+    if(!name||name==='Итого')continue;
+    // Ед.изм в col 7 — берём только рул.
+    const unit=row[7]?String(row[7]).trim():'';
+    if(unit!=='рул.')continue;
+    
+    let lastIdx=-1;
+    let hasAny=false;
+    for(let ci=0;ci<dateCols.length;ci++){
+      const v=parseFloat(row[dateCols[ci].col])||0;
+      if(v>0){hasAny=true;lastIdx=ci;}
+    }
+    result.set(name,{lastIdx,hasAny,totalMonths:dateCols.length});
+  }
+  return result;
 }
 function parseSales(ws){
   const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
@@ -566,7 +620,8 @@ function parseStock(ws){
 function pDate(s){const p=s.split(' ')[0].split('.');return new Date(+p[2],+p[1]-1,+p[0]);}
 function fDate(d){if(!d)return '';return`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;}
 
-function mergeData(sd,od){
+function mergeData(sd,od,arrivals){
+  if(!arrivals)arrivals=new Map();
   const all=new Set([...Object.keys(sd),...Object.keys(od)]);
   const items=[];let id=0;
   for(const name of all){
@@ -598,20 +653,41 @@ function mergeData(sd,od){
     const isNewBySale=firstSaleIdx>=0&&firstSaleIdx>=(mQty.length-2)&&tQty<(aqm*3);
     const isNewItem=(isNewByStock||isNewBySale)&&!tags.includes('ТО')&&!tags.includes('ТНО');
     if(isNewItem)tags.push('Новинка');
-    // Возраст остатка: сколько месяцев назад остаток был на уровне текущего или выше
-    // Т.е. минимальный срок нахождения текущих единиц на складе
+    // Возраст остатка: сколько месяцев прошло с последнего прихода товара
+    // Источник 1: вкладка Поступление (точный данные о приходах)
+    // Источник 2: если нет поступлений — смотрим когда был скачок остатков вверх
     const stockValsArr=Object.values(o.byDate||{});
-    let stockAge=0; // месяцев
-    if(cs>0&&stockValsArr.length>0){
-      // Идём с конца назад, ищем первый месяц где остаток был >= текущего
-      // Это означает что товар лежит минимум столько месяцев
-      for(let si=stockValsArr.length-1;si>=0;si--){
-        if(stockValsArr[si]>=cs){stockAge=stockValsArr.length-1-si;break;}
+    const arrInfo=arrivals?arrivals.get(name):null;
+    let stockAge=0;
+    
+    if(cs>0){
+      if(arrInfo&&arrInfo.hasAny){
+        // Есть данные о поступлениях: возраст = сколько месяцев прошло с последнего прихода
+        // lastIdx — индекс в периоде поступлений (0=янв2026)
+        // Поступления за последние 5 месяцев периода (из 13 общих)
+        const arrMonthsTotal=arrInfo.totalMonths||5;
+        const monthsSinceLastArr=arrMonthsTotal-1-arrInfo.lastIdx;
+        stockAge=monthsSinceLastArr;
+      } else if(arrInfo&&!arrInfo.hasAny){
+        // Товар есть в вкладке поступлений, но приходов не было
+        // Значит последний приход был ДО начала периода поступлений (>5 мес назад)
+        stockAge=arrInfo.totalMonths||5; // минимум N месяцев
+      } else {
+        // Вкладки поступлений нет — используем старый метод по остаткам
+        // Ищем последний скачок остатка ВВЕРХ
+        if(stockValsArr.length>1){
+          let lastRiseIdx=0;
+          for(let si=1;si<stockValsArr.length;si++){
+            if(stockValsArr[si]>stockValsArr[si-1])lastRiseIdx=si;
+          }
+          stockAge=stockValsArr.length-1-lastRiseIdx;
+        }
       }
     }
     items.push({id:id++,name,totalRev:tRev,totalQty:tQty,avgQtyPerMonth:aqm,avgRevPerMonth:arm,
       monthlyQty:mQty,monthlyRev:mRev,months,currentStock:cs,staleMonths:sm,staleDays:sm*30,
-      cv,tags,isNewItem,stockAge,_stockByDate:o.byDate||{},catABCD_money:'',catABCD_units:'',catXYZ:'',catCombo:''});
+      cv,tags,isNewItem,stockAge,_stockByDate:o.byDate||{},_arrInfo:arrInfo||null,
+      catABCD_money:'',catABCD_units:'',catXYZ:'',catCombo:''});
   }
   calcABCD(items,'totalRev','catABCD_money');
   calcABCD(items,'totalQty','catABCD_units');
@@ -928,7 +1004,8 @@ function showChart(id){
     +`<span style="color:var(--text3);margin-left:12px">Актив. мес: </span><strong>${activeMoCount}/${it.months.length}</strong>`
     +`<span style="color:var(--text3);margin-left:12px">Тек. остаток: </span><strong>${fmtN(it.currentStock)} шт</strong>`
     +`<span style="color:var(--text3);margin-left:12px">Залежалость: </span><strong class="${getStaleCls(it.staleMonths)} stale-value">${fmtStale(it.staleMonths)}</strong>`
-    +`<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(it.stockAge)} stale-value" title="Сколько месяцев текущий остаток уже лежит">${it.stockAge===0?'&lt;1мес':it.stockAge+'мес'}</strong>`;
+    +`<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(it.stockAge)} stale-value" title="Сколько месяцев прошло с последнего прихода товара">${it.stockAge===0?'&lt;1мес':it.stockAge+'мес'}</strong>`
+    +(it._arrInfo?`<span style="color:var(--text3);margin-left:12px">Последний приход: </span><strong>${it._arrInfo.hasAny?'в периоде поступлений':'до начала периода (&gt;'+it._arrInfo.totalMonths+'мес назад)'}</strong>`:'');
 
   // Таблица: месяц | продажи шт | выручка ₸ | остаток шт | залежалость
   // Получаем остатки по датам из данных
