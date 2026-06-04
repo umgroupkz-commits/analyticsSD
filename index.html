@@ -262,14 +262,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
     <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)" style="margin-left:auto">⚙ Настройки</button>
   </div>
   <!-- DASHBOARD -->
-  <div class="dashboard-wrap" id="dashboardWrap">
-    <div class="dashboard-toggle" id="dashToggle" onclick="toggleDashboard()">
-      <span class="arrow" id="dashArrow">▾</span>
-      <span id="dashToggleLabel">Сводка и фильтры</span>
-    </div>
-    <div class="dashboard-body" id="dashBody">
-      <!-- TOOLBAR -->
-      <div class="toolbar" id="mainToolbar">
+  <div class="toolbar" id="mainToolbar">
         <span class="toolbar-label">Анализ:</span>
         <button class="btn btn-ghost btn-sm active" id="modeABCD_money" onclick="setMode('ABCD_money')">ABCD ₸</button>
         <button class="btn btn-ghost btn-sm" id="modeABCD_units" onclick="setMode('ABCD_units')">ABCD шт</button>
@@ -290,6 +283,281 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
         <button class="btn btn-ghost btn-sm" onclick="toggleShowDeleted()" id="btnShowDeleted" style="display:none">🗑 Удалённые (0)</button>
         <button class="btn btn-ghost btn-sm" onclick="exportMain()">↓ Excel</button>
       </div>
+  
+    <div class="dashboard-wrap" id="dashboardWrap">
+    <div class="dashboard-toggle" id="dashToggle" onclick="toggleDashboard()">
+      <span class="arrow" id="dashArrow">▾</span>
+      <span id="dashToggleLabel">Сводка и фильтры</span>
+    </div>
+    <div class="dashboard-body" id="dashBody">
+1.0">
+<title>Аналитика товарных остатков</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Geologica:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2336;--surface3:#252b40;--border:#2d3555;--border2:#3d4870;--text:#e8ecf8;--text2:#8892b0;--text3:#4a5578;--accent:#4f8ef7;--accent2:#7c6af7;--green:#2ecc71;--yellow:#f1c40f;--orange:#e67e22;--red:#e74c3c;--red2:#c0392b;--teal:#1abc9c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* ATTRIBUTION */
+.attribution{background:#0a0d14;border-bottom:1px solid var(--border);padding:5px 24px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
+.attribution a{color:var(--accent);text-decoration:none}.attribution a:hover{text-decoration:underline}
+.attr-sep{color:var(--border2)}
+/* HEADER */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.app-logo{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600}
+.app-title{font-size:14px;font-weight:600}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:16px;padding:50px 40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);margin:40px auto;max-width:560px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:#1a2240}
+.upload-icon{font-size:44px;margin-bottom:14px}
+.upload-title{font-size:19px;font-weight:600;margin-bottom:6px}
+.upload-sub{color:var(--text2);font-size:13px}
+#fileInput{display:none}
+/* TABS */
+.tabs-bar{display:flex;gap:2px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto;position:sticky;top:49px;z-index:90}
+.tab-btn{padding:10px 16px;font-size:12px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;font-family:'Geologica',sans-serif}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-btn.report-tab{color:var(--teal)}.tab-btn.report-tab.active{border-bottom-color:var(--teal)}
+/* DASHBOARD */
+.dashboard-wrap{background:var(--surface2);border-bottom:1px solid var(--border)}
+.dashboard-toggle{display:flex;align-items:center;gap:8px;padding:6px 24px;cursor:pointer;font-size:11px;color:var(--text3);user-select:none;background:var(--surface2);border-bottom:1px solid var(--border)}
+.dashboard-toggle:hover{color:var(--text2)}
+.dashboard-toggle .arrow{transition:transform .2s;display:inline-block}
+.dashboard-toggle.collapsed .arrow{transform:rotate(-90deg)}
+.dashboard-body{overflow:hidden;transition:max-height .3s ease}
+.dashboard-body.collapsed{max-height:0!important}
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:6px;padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;z-index:80}
+.toolbar-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
+/* FILTER CHIPS */
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;padding:8px 24px;background:var(--surface2);border-bottom:1px solid var(--border);align-items:center}
+.fchip{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:'Geologica',sans-serif;color:var(--text2);background:var(--surface3);border-color:var(--border)}
+.fchip:hover,.fchip.active{color:var(--text);border-color:var(--accent);background:var(--surface)}
+.fchip.cat-a.active{border-color:#4f8ef7;color:#4f8ef7;background:#1a3060}
+.fchip.cat-b.active{border-color:#7c6af7;color:#7c6af7;background:#2d1f5e}
+.fchip.cat-c.active{border-color:#f1c40f;color:#f1c40f;background:#3d3510}
+.fchip.cat-d.active{border-color:#8892b0;color:#8892b0;background:#252a3d}
+.fchip.xyz-x.active{border-color:#2ecc71;color:#2ecc71;background:#0f3020}
+.fchip.xyz-y.active{border-color:#e67e22;color:#e67e22;background:#3d2810}
+.fchip.xyz-z.active{border-color:#e74c3c;color:#e74c3c;background:#3d1010}
+.fchip.stale-ok.active{border-color:#2ecc71;color:#2ecc71;background:#0f3020}
+.fchip.stale-w.active{border-color:#f1c40f;color:#f1c40f;background:#3d3510}
+.fchip.stale-r.active{border-color:#e67e22;color:#e67e22;background:#3d2810}
+.fchip.stale-c.active{border-color:#e74c3c;color:#e74c3c;background:#3d1010}
+.fchip.stale-d.active{border-color:#c0392b;color:#c0392b;background:#3d0808}
+.fchip.tag-to.active{border-color:#ff8888;color:#ff8888;background:#3d1a1a}
+.fchip.tag-hash.active{border-color:#ffa060;color:#ffa060;background:#3d2a1a}
+.fchip.tag-brak.active{border-color:#d488ff;color:#d488ff;background:#3a1a3d}
+.fchip.tag-nar.active{border-color:#60ddd0;color:#60ddd0;background:#1a3d3d}
+.fchip.tag-kat.active{border-color:#80e080;color:#80e080;background:#1a3d1a}
+.fchip.tag-akc.active{border-color:#ffe060;color:#ffe060;background:#3d3a1a}
+.fchip.tag-sz.active{border-color:#8888ff;color:#8888ff;background:#1a1a3d}
+.fchip.tag-tno.active{border-color:#ff6060;color:#ff6060;background:#4d1a1a}.fchip.tag-tr.active{border-color:#60c0ff;color:#60c0ff;background:#1a2a3d}.fchip.tag-star.active{border-color:#ffbb40;color:#ffbb40;background:#3d2a10}
+.fchip.tag-t.active{border-color:#ffaa60;color:#ffaa60;background:#3d2510}
+.fchip.tag-new.active{border-color:#40e0a0;color:#40e0a0;background:#0f3d2a}
+.fchip-reset{color:var(--red)!important;border-color:var(--red)!important}
+.fchip-reset:hover{background:#3d1010!important}
+/* BUTTONS */
+.btn{padding:6px 13px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:600;font-family:'Geologica',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#3a7de8}
+.btn-ghost{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--border2)}.btn-ghost.active{color:var(--text);border-color:var(--accent)}
+.btn-danger{background:#3d1a1a;color:var(--red);border:1px solid #5a2020}.btn-danger:hover{background:#4d2020}
+.btn-success{background:#1a3d2a;color:var(--green);border:1px solid #1e5a35}.btn-success:hover{background:#1e4d30}
+.btn-ai{background:linear-gradient(135deg,#3d2f6e,#2d4080);color:#c8b8ff;border:1px solid #5a4a9e}.btn-ai:hover{background:linear-gradient(135deg,#4d3f7e,#3d5090)}
+.btn-teal{background:#1a3d38;color:var(--teal);border:1px solid #1a5a50}.btn-teal:hover{background:#1e4d44}
+.btn-orange{background:#3d2810;color:var(--orange);border:1px solid #5a3a10}.btn-orange:hover{background:#4d3010}
+.btn-sm{padding:4px 9px;font-size:10px;border-radius:6px}
+.sep{width:1px;height:22px;background:var(--border);margin:0 2px}
+/* STATS */
+.stats-row{display:flex;gap:10px;padding:12px 24px;flex-wrap:wrap}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 16px;min-width:130px}
+.stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.stat-value{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.stat-sub{font-size:10px;color:var(--text2);margin-top:1px}
+/* LEGEND */
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;padding:8px 24px;font-size:10px}
+.legend-item{display:flex;align-items:center;gap:5px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+/* ANALYSIS CARDS */
+.analysis-cards{display:flex;gap:8px;flex-wrap:wrap;padding:10px 24px}
+.analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:10px;min-width:170px;cursor:pointer;transition:all .15s}
+.analysis-card:hover{border-color:var(--border2)}
+.analysis-card.active{border-width:2px}
+.analysis-card-title{font-weight:700;margin-bottom:3px;font-size:11px}
+.analysis-card-desc{color:var(--text2);line-height:1.5}
+/* TABLE */
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead{position:sticky;top:0;z-index:10}
+th{background:var(--surface2);padding:9px 10px;text-align:left;font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text2)}.th-sorted{color:var(--accent)!important}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--surface2)}
+tr.selected td{background:#1a2240}
+tr.hidden-row{display:none}
+.name-cell{font-size:11px;color:var(--text);max-width:220px;word-break:break-word;line-height:1.4}
+.mono{font-family:'JetBrains Mono',monospace}
+/* BADGES */
+.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.badge-A{background:#1a3060;color:#4f8ef7}.badge-B{background:#2d1f5e;color:#7c6af7}
+.badge-C{background:#3d3510;color:#f1c40f}.badge-D{background:#252a3d;color:#8892b0}
+.badge-X{background:#0f3020;color:#2ecc71}.badge-Y{background:#3d2810;color:#e67e22}
+.badge-Z{background:#3d1010;color:#e74c3c}
+/* STALE */
+.stale-bar{display:flex;align-items:center;gap:6px}
+.stale-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.stale-ok .stale-dot{background:var(--green)}.stale-warn .stale-dot{background:var(--yellow)}
+.stale-danger .stale-dot{background:var(--orange)}.stale-critical .stale-dot{background:var(--red)}
+.stale-dead .stale-dot{background:var(--red2);box-shadow:0 0 5px var(--red)}
+.stale-value{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.stale-ok .stale-value{color:var(--green)}.stale-warn .stale-value{color:var(--yellow)}
+.stale-danger .stale-value{color:var(--orange)}.stale-critical .stale-value{color:var(--red)}
+.stale-dead .stale-value{color:var(--red2)}
+/* SPARKLINE */
+.sparkline{display:flex;align-items:flex-end;gap:1.5px;height:22px;cursor:pointer}
+.sparkline:hover{opacity:.8}
+.spark-bar{width:4px;border-radius:1px 1px 0 0;min-height:2px}
+/* CHIPS */
+.chip{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.04em}
+.chip-to{background:#3d1a1a;color:#ff8888}.chip-hash{background:#3d2a1a;color:#ffa060}
+.chip-brak{background:#3a1a3d;color:#d488ff}.chip-nar{background:#1a3d3d;color:#60ddd0}
+.chip-kat{background:#1a3d1a;color:#80e080}.chip-akc{background:#3d3a1a;color:#ffe060}
+.chip-sz{background:#1a1a3d;color:#8888ff}.chip-tno{background:#4d1a1a;color:#ff6060}.chip-t{background:#3d2510;color:#ffaa60}.chip-new{background:#0f3d2a;color:#40e0a0;border:1px solid #1a6040}.chip-tr{background:#1a2a3d;color:#60c0ff}.chip-star{background:#3d2a10;color:#ffbb40}
+/* AI REC */
+.ai-rec-cell{max-width:200px;font-size:10px;color:var(--text2);line-height:1.4}
+.rec-badge{display:inline-block;margin-bottom:2px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
+.rec-vyvod{background:#3d1a1a;color:#ff6060}
+.rec-opt{background:#2a1a3d;color:#c080ff}
+.rec-motiv{background:#1a3d2a;color:#40d090}
+.rec-akc{background:#3d2a10;color:#ffaa40}
+.rec-wait{background:#3d3510;color:#ffe060}
+.rec-norm{background:#0f3020;color:#40e080}
+/* AI PANEL */
+.ai-panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.ai-panel.open{transform:translateX(0)}
+.ai-panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ai-panel-title{font-size:13px;font-weight:600;flex:1}
+.ai-panel-body{flex:1;overflow-y:auto;padding:14px 18px}
+.ai-status{font-size:11px;color:var(--text2);margin-bottom:10px}
+.ai-progress{height:2px;background:var(--surface3);border-radius:1px;margin-bottom:14px;overflow:hidden}
+.ai-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:1px;transition:width .3s}
+.ai-item{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:7px}
+.ai-item-name{font-size:10px;color:var(--text2);margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.ai-item-rec{font-size:11px;color:var(--text);line-height:1.5}
+.ai-api-row{padding:14px 18px;border-top:1px solid var(--border)}
+.api-input{width:100%;padding:7px 11px;border-radius:7px;background:var(--surface3);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:'Geologica',sans-serif;margin-bottom:7px;outline:none}
+.api-input:focus{border-color:var(--accent)}
+.api-input::placeholder{color:var(--text3)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px;max-width:460px;width:90%}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:7px}
+.modal-sub{color:var(--text2);font-size:12px;margin-bottom:18px}
+.modal-input{width:100%;padding:9px 13px;border-radius:7px;background:var(--surface3);border:1px solid var(--border);color:var(--text);font-size:13px;font-family:'Geologica',sans-serif;margin-bottom:14px;outline:none}
+.modal-input:focus{border-color:var(--accent)}
+.modal-btns{display:flex;gap:7px;justify-content:flex-end}
+/* CHART MODAL */
+.chart-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:860px;width:96%;max-height:90vh;display:flex;flex-direction:column}
+.chart-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.detail-table-wrap{overflow:auto;flex:1}
+.detail-table{width:100%;border-collapse:collapse;font-size:11px}
+.detail-table th{background:var(--surface3);padding:8px 10px;text-align:right;font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);white-space:nowrap;position:sticky;top:0}
+.detail-table th:first-child{text-align:left}
+.detail-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px}
+.detail-table td:first-child{text-align:left;font-family:'Geologica',sans-serif;color:var(--text2);white-space:nowrap}
+.detail-table tr:hover td{background:var(--surface2)}
+.detail-table tr.summary-row td{background:var(--surface3);font-weight:700;border-top:2px solid var(--border2);color:var(--text)}
+.detail-table .val-zero{color:var(--text3)}
+.detail-table .val-pos{color:var(--text)}
+.detail-table .stale-cell{font-weight:600}
+.detail-table .stale-ok{color:var(--green)}
+.detail-table .stale-warn{color:var(--yellow)}
+.detail-table .stale-danger{color:var(--orange)}
+.detail-table .stale-critical{color:var(--red)}
+.detail-table .stale-dead{color:var(--red2)}
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(15,17,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500}
+.loading-spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+/* VYVOD */
+.vyvod-section{padding:20px 24px}
+.vyvod-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.vyvod-title{font-size:15px;font-weight:700}
+.vyvod-count{background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:38px;margin-bottom:10px}
+.row-actions{display:flex;gap:3px;align-items:center}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
+.num-pos{color:var(--text)}.num-zero{color:var(--text3)}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- ATTRIBUTION -->
+<div class="attribution">
+  <span>© 2026</span>
+  <strong style="color:var(--text2)">Андрей Станков</strong>
+  <span class="attr-sep">·</span>
+  <span>Директор по развитию на аутсорсе</span>
+  <span class="attr-sep">·</span>
+  <a href="https://fractionceo.umgroup.kz" target="_blank">fractionceo.umgroup.kz</a>
+  <span class="attr-sep">·</span>
+  <span style="color:var(--border2)">Все права защищены</span>
+</div>
+<!-- HEADER -->
+<div class="app-header">
+  <div class="app-logo">[ АТО ]</div>
+  <div class="app-title">Аналитика товарных остатков</div>
+  <div class="header-right" id="headerRight">
+    <span id="fileNameDisplay" style="font-size:10px;color:var(--text3);display:none"></span>
+    <button class="btn btn-ghost btn-sm" onclick="resetApp()" id="btnReset" style="display:none">↺ Новый файл</button>
+  </div>
+</div>
+<!-- UPLOAD -->
+<div id="uploadView" style="padding:40px 24px">
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+       ondragover="event.preventDefault();this.classList.add('drag')"
+       ondragleave="this.classList.remove('drag')"
+       ondrop="event.preventDefault();this.classList.remove('drag');handleFile(event.dataTransfer.files[0])">
+    <div class="upload-icon">📊</div>
+    <div class="upload-title">Загрузить файл отчёта</div>
+    <div class="upload-sub" style="margin-bottom:14px">XLS / XLSX с вкладками «Продажи» и «Остатки»</div>
+    <button class="btn btn-primary" style="pointer-events:none">Выбрать файл</button>
+  </div>
+  <input type="file" id="fileInput" accept=".xls,.xlsx" onchange="handleFile(this.files[0])">
+  <div style="max-width:560px;margin:0 auto">
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:14px">— Введите API ключ для ИИ-функций —</div>
+    <div style="display:flex;gap:7px">
+      <input class="api-input" id="apiKeyUpfront" placeholder="sk-ant-... (Claude API ключ)" style="flex:1;margin:0">
+      <button class="btn btn-ai" onclick="saveApiKey()">Сохранить</button>
+    </div>
+    <div id="apiKeySaved" style="font-size:10px;color:var(--green);margin-top:5px;display:none">✓ API ключ сохранён</div>
+  </div>
+</div>
+<!-- MAIN -->
+<div id="mainView" style="display:none">
+  <div class="tabs-bar" id="tabsBar">
+    <button class="tab-btn active" data-tab="main" onclick="switchTab('main',this)">Основной отчёт</button>
+    <button class="tab-btn" data-tab="vyvod" onclick="switchTab('vyvod',this)">📤 На вывод <span id="vyvodCount" class="badge badge-D" style="margin-left:3px">0</span></button>
+    <button class="tab-btn" data-tab="help" onclick="switchTab('help',this)">❓ Справка</button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)" style="margin-left:auto">⚙ Настройки</button>
+  </div>
+  <!-- DASHBOARD -->
+  <div class="dashboard-wrap" id="dashboardWrap">
+    <div class="dashboard-toggle" id="dashToggle" onclick="toggleDashboard()">
+      <span class="arrow" id="dashArrow">▾</span>
+      <span id="dashToggleLabel">Сводка и фильтры</span>
+    </div>
+    <div class="dashboard-body" id="dashBody">
+      <!-- TOOLBAR -->
+      
       <!-- FILTER CHIPS -->
       <div id="filterChips"></div>
       <!-- STATS -->
