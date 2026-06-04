@@ -268,6 +268,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
         <button class="btn btn-ai btn-sm" onclick="openAiPanel()">🤖 ИИ-рекомендации</button>
         <button class="btn btn-ai btn-sm" onclick="autoMarkVyvod()">🎯 ИИ-автовывод</button>
         <button class="btn btn-orange btn-sm" onclick="formulaAutoVyvod()">⚡ Авто-вывод</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteZeroStock()" title="Удалить из отчёта все позиции с нулевым остатком и пересчитать">🗑 Удалить нулевые остатки</button>
         <div class="sep"></div>
         <button class="btn btn-ghost btn-sm" onclick="toggleShowDeleted()" id="btnShowDeleted" style="display:none">🗑 Удалённые (0)</button>
         <button class="btn btn-ghost btn-sm" onclick="exportMain()">↓ Excel</button>
@@ -337,7 +338,8 @@ let allItems=[], displayItems=[], vyvodItems=[], customReports=[];
 let currentTab='main', currentMode='ABCD_money';
 let activeFilters={cats:new Set(), xyz:new Set(), stale:new Set(), tags:new Set()};
 let hiddenIds=new Set(), selectedIds=new Set(), deletedIds=new Set();
-let showDeleted=true; // показывать удалённые зачёркнутыми
+let showDeleted=true;
+let autoFilterIds=null; // если не null — показываем только эти id (режим авто-вывода) // показывать удалённые зачёркнутыми
 let aiRecsMap={};
 let sortCol=null, sortDir=-1;
 let modalCallback=null;
@@ -560,14 +562,24 @@ function toggleFilter(type,val,el){
   applyFilters();renderTable();
 }
 function resetAllFilters(){
+  autoFilterIds=null;
   activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
   document.querySelectorAll('.fchip').forEach(e=>e.classList.remove('active'));
   applyFilters();renderTable();
 }
+function resetAutoFilter(){
+  autoFilterIds=null;
+  selectedIds.clear();
+  applyFilters();renderFilterChips();renderTable();
+}
 function applyFilters(){
   const vyvodIds=new Set(vyvodItems.map(v=>v.id));
-  // Удалённые не участвуют в фильтрации (они всегда в конце таблицы если showDeleted)
-  displayItems=allItems.filter(it=>!vyvodIds.has(it.id)&&!deletedIds.has(it.id)&&itemMatchesFilters(it));
+  if(autoFilterIds!==null){
+    // Режим авто-вывода: показываем только кандидатов
+    displayItems=allItems.filter(it=>autoFilterIds.has(it.id)&&!vyvodIds.has(it.id)&&!deletedIds.has(it.id));
+  } else {
+    displayItems=allItems.filter(it=>!vyvodIds.has(it.id)&&!deletedIds.has(it.id)&&itemMatchesFilters(it));
+  }
 }
 
 // ==================== RENDER ====================
@@ -607,7 +619,8 @@ function renderFilterChips(){
     const active=activeFilters.tags.has(t.k);
     html+=`<span class="fchip ${t.cls} ${active?'active':''}" data-ftype="tags" data-fval="${escHtml(t.k)}" onclick="toggleFilter('tags','${t.k}',this)">${escHtml(t.k)}</span>`;
   }
-  if(hasActive)html+=`<span class="fchip fchip-reset" onclick="resetAllFilters()">✕ Сбросить фильтры</span>`;
+  if(autoFilterIds!==null)html+=`<span class="fchip" style="background:#3d2810;color:#ffaa60;border-color:#5a3a10">⚡ Режим авто-вывода</span><span class="fchip fchip-reset" onclick="resetAutoFilter()">✕ Сбросить</span>`;
+  else if(hasActive)html+=`<span class="fchip fchip-reset" onclick="resetAllFilters()">✕ Сбросить фильтры</span>`;
   fc.innerHTML=html;
 }
 function renderStats(){
@@ -950,22 +963,40 @@ function saveAsReport(){
 function removeReport(idx,btn){customReports[idx]=null;btn.remove();switchTab('main',document.querySelector('[data-tab=main]'));}
 
 // ==================== AUTO VYVOD (formula) ====================
+function deleteZeroStock(){
+  const zeros=allItems.filter(it=>!deletedIds.has(it.id)&&it.currentStock===0);
+  if(!zeros.length){alert('Нет позиций с нулевым остатком');return;}
+  if(!confirm(`Удалить из отчёта ${zeros.length} позиций с нулевым остатком?\nОни будут зачёркнуты внизу таблицы, категории пересчитаются.\nМожно вернуть через кнопку «↩».`))return;
+  zeros.forEach(it=>deletedIds.add(it.id));
+  recomputeCategories();
+  renderAll();
+  // Показываем кнопку удалённых
+  updateDeletedBtn();
+}
+
 function formulaAutoVyvod(){
-  let cnt=0;const autoIds=new Set();
+  const vyvodIds=new Set(vyvodItems.map(v=>v.id));
+  const candidates=[];
   for(const it of allItems){
-    if(deletedIds.has(it.id)||vyvodItems.find(v=>v.id===it.id))continue;
+    if(deletedIds.has(it.id)||vyvodIds.has(it.id))continue;
     const isD=it.catABCD_money==='D';
     const noSales=it.totalQty===0&&it.currentStock>0;
     const superStale=it.staleMonths>24;
     const dAndStale=isD&&it.staleMonths>12;
-    if(noSales||superStale||dAndStale){selectedIds.add(it.id);autoIds.add(it.id);cnt++;}
+    if(noSales||superStale||dAndStale)candidates.push(it);
   }
-  if(!cnt){alert('По формуле не найдено очевидных кандидатов');return;}
-  // Применяем фильтр — показываем только отмеченные
-  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
-  displayItems=allItems.filter(it=>autoIds.has(it.id));
-  renderFilterChips();renderTable();
-  alert('⚡ Авто-вывод: отмечено '+cnt+' позиций\n• Категория D + залежалость >12 мес\n• Залежалость >24 мес\n• Нет продаж при наличии остатка\n\nПроверьте отмеченные и нажмите «На вывод».');
+  if(!candidates.length){alert('По формуле не найдено очевидных кандидатов');return;}
+  const msg='⚡ Авто-вывод нашёл '+candidates.length+' позиций:\n\n'
+    +'• Категория D + залежалость >12 мес\n'
+    +'• Залежалость >24 мес (любая категория)\n'
+    +'• Нет продаж при наличии остатка\n\n'
+    +'Показать отфильтрованный список?\nВсе будут отмечены галочками — снимите лишние и нажмите «На вывод».';
+  if(!confirm(msg))return;
+  selectedIds.clear();
+  candidates.forEach(it=>selectedIds.add(it.id));
+  autoFilterIds=new Set(candidates.map(it=>it.id));
+  renderFilterChips();
+  renderTable();
 }
 
 // ==================== AI ====================
@@ -992,7 +1023,7 @@ async function runAiAnalysis(){
     const test=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:10,messages:[{role:'user',content:'1+1=?'}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:10,messages:[{role:'user',content:'1+1=?'}]})
     });
     if(test.status===401){body.innerHTML='<div style="color:var(--red);font-size:12px;line-height:1.6">❌ Неверный API ключ. Проверьте ключ на console.anthropic.com</div>';return;}
     if(test.status===403){body.innerHTML='<div style="color:var(--orange);font-size:12px;line-height:1.6">⚠️ CORS-блокировка браузера.<br><br>Это происходит когда файл открыт локально (file://).<br><br><b>Решение:</b> загрузите файл на GitHub Pages или любой веб-сервер — тогда ИИ заработает.<br><br>Пока можно использовать <b>⚡ Авто-вывод</b> — он работает без ИИ по формуле.</div>';return;}
@@ -1024,7 +1055,7 @@ async function runAiAnalysis(){
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',max_tokens:2000,
+          model:'claude-sonnet-4-5',max_tokens:2000,
           system:'Аналитик товарных остатков. Отвечай ТОЛЬКО JSON массивом, без markdown, без пояснений. Формат каждого элемента строго: {"id":число,"action":"Вывод","text":"текст до 10 слов"}. action только из: Вывод, Усилить, Мотивация, Норма, Ждать.',
           messages:[{role:'user',content:buildPrompt(batch)}]
         })
@@ -1089,8 +1120,7 @@ async function autoMarkVyvod(){
   }
   if(!cnt){alert('ИИ не нашёл позиций для вывода');return;}
   // Фильтруем таблицу — только ИИ-кандидаты
-  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
-  displayItems=allItems.filter(it=>aiIds.has(it.id));
+  autoFilterIds=aiIds;
   renderFilterChips();renderTable();
   alert('🎯 ИИ отметил '+cnt+' позиций для вывода. Проверьте галочки и нажмите «На вывод».');
 }
@@ -1147,7 +1177,7 @@ function hideLoading(){document.getElementById('loadingOverlay').style.display='
 // ==================== RESET ====================
 function resetApp(){
   allItems=[];displayItems=[];vyvodItems=[];customReports=[];
-  hiddenIds.clear();selectedIds.clear();deletedIds.clear();aiRecsMap={};showDeleted=true;
+  hiddenIds.clear();selectedIds.clear();deletedIds.clear();aiRecsMap={};showDeleted=true;autoFilterIds=null;
   activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
   sortCol=null;currentMode='ABCD_money';currentTab='main';
   document.getElementById('uploadView').style.display='block';
