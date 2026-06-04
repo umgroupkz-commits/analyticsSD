@@ -256,6 +256,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
   <div class="tabs-bar" id="tabsBar">
     <button class="tab-btn active" data-tab="main" onclick="switchTab('main',this)">Основной отчёт</button>
     <button class="tab-btn" data-tab="vyvod" onclick="switchTab('vyvod',this)">📤 На вывод <span id="vyvodCount" class="badge badge-D" style="margin-left:3px">0</span></button>
+    <button class="tab-btn" data-tab="help" onclick="switchTab('help',this)">❓ Справка</button>
     <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)" style="margin-left:auto">⚙ Настройки</button>
   </div>
   <!-- DASHBOARD -->
@@ -352,7 +353,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 // ==================== STATE ====================
 let allItems=[], displayItems=[], vyvodItems=[], customReports=[];
 let currentTab='main', currentMode='ABCD_money';
-let activeFilters={cats:new Set(), xyz:new Set(), stale:new Set(), tags:new Set()};
+let activeFilters={cats:new Set(), xyz:new Set(), stale:new Set(), age:new Set(), tags:new Set()};
 let hiddenIds=new Set(), selectedIds=new Set(), deletedIds=new Set();
 let showDeleted=true;
 let autoFilterIds=null; // если не null — показываем только эти id (режим авто-вывода)
@@ -371,6 +372,18 @@ const DEFAULT_SETTINGS={
   autoVyvodStale:12,      // залежалость для D+стале авто-вывода
   autoVyvodSuperStale:24, // супер-залежалость любой категории
   optMinStock:50,         // минимальный остаток для категории Опт
+  // Расширенные условия авто-вывода (вкл/выкл + порог)
+  avEnabled_dStale:true,       // D + залежалость > N мес
+  avEnabled_superStale:true,   // любая + залежалость > N мес
+  avEnabled_noSales:true,      // нет продаж + есть остаток
+  avEnabled_age:false,         // возраст остатка > N мес
+  avEnabled_ageCd:false,       // возраст > N мес + кат C/D
+  avEnabled_dz:false,          // кат D + XYZ = Z
+  avEnabled_trend:false,       // залежалость > N + тренд падение
+  avAge:12,                    // порог возраста
+  avAgeCd:6,                   // порог возраста для C/D
+  avTrendStale:6,              // залежалость для тренд-условия
+  avExcludeAB:true,            // не выводить A и B категории
   staleZone1:3, staleZone2:6, staleZone3:12, staleZone4:24, // зоны залежалости
   ageZone1:3, ageZone2:6, ageZone3:12, ageZone4:24,  // зоны возраста остатка
 };
@@ -389,6 +402,15 @@ function applySettingsFromForm(){
   CFG.xyzX=f('cfg_xyzX');CFG.xyzY=f('cfg_xyzY');
   CFG.autoVyvodStale=f('cfg_autoVyvodStale');CFG.autoVyvodSuperStale=f('cfg_autoVyvodSuperStale');
   CFG.optMinStock=f('cfg_optMinStock');
+  CFG.avEnabled_dStale=document.getElementById('cfg_avEnabled_dStale')?.checked??true;
+  CFG.avEnabled_superStale=document.getElementById('cfg_avEnabled_superStale')?.checked??true;
+  CFG.avEnabled_noSales=document.getElementById('cfg_avEnabled_noSales')?.checked??true;
+  CFG.avEnabled_age=document.getElementById('cfg_avEnabled_age')?.checked??false;
+  CFG.avEnabled_ageCd=document.getElementById('cfg_avEnabled_ageCd')?.checked??false;
+  CFG.avEnabled_dz=document.getElementById('cfg_avEnabled_dz')?.checked??false;
+  CFG.avEnabled_trend=document.getElementById('cfg_avEnabled_trend')?.checked??false;
+  CFG.avAge=f('cfg_avAge');CFG.avAgeCd=f('cfg_avAgeCd');CFG.avTrendStale=f('cfg_avTrendStale');
+  CFG.avExcludeAB=document.getElementById('cfg_avExcludeAB')?.checked??true;
   CFG.staleZone1=f('cfg_staleZone1');CFG.staleZone2=f('cfg_staleZone2');
   CFG.staleZone3=f('cfg_staleZone3');CFG.staleZone4=f('cfg_staleZone4');
   CFG.ageZone1=f('cfg_ageZone1');CFG.ageZone2=f('cfg_ageZone2');
@@ -428,6 +450,7 @@ function fillSettingsForm(){
     cfg_xyzX:CFG.xyzX,cfg_xyzY:CFG.xyzY,
     cfg_autoVyvodStale:CFG.autoVyvodStale,cfg_autoVyvodSuperStale:CFG.autoVyvodSuperStale,
     cfg_optMinStock:CFG.optMinStock,
+    cfg_avAge:CFG.avAge,cfg_avAgeCd:CFG.avAgeCd,cfg_avTrendStale:CFG.avTrendStale,
     cfg_staleZone1:CFG.staleZone1,cfg_staleZone2:CFG.staleZone2,
     cfg_staleZone3:CFG.staleZone3,cfg_staleZone4:CFG.staleZone4,
     cfg_ageZone1:CFG.ageZone1,cfg_ageZone2:CFG.ageZone2,
@@ -435,6 +458,13 @@ function fillSettingsForm(){
   };
   for(const[id,val]of Object.entries(fields)){
     const el=document.getElementById(id);if(el)el.value=val;
+  }
+  const checks={cfg_avEnabled_dStale:CFG.avEnabled_dStale,cfg_avEnabled_superStale:CFG.avEnabled_superStale,
+    cfg_avEnabled_noSales:CFG.avEnabled_noSales,cfg_avEnabled_age:CFG.avEnabled_age,
+    cfg_avEnabled_ageCd:CFG.avEnabled_ageCd,cfg_avEnabled_dz:CFG.avEnabled_dz,
+    cfg_avEnabled_trend:CFG.avEnabled_trend,cfg_avExcludeAB:CFG.avExcludeAB};
+  for(const[id,val]of Object.entries(checks)){
+    const el=document.getElementById(id);if(el)el.checked=val;
   }
 }
 loadSettings();
@@ -522,24 +552,30 @@ function parseArrivals(ws){
   if(!ws) return new Map();
   const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
   
-  // Найти строку с заголовком (содержит даты)
+  // Найти строку с заголовком — ищем строку где есть даты вида DD.MM.YYYY
   let hdr=-1;
   for(let i=0;i<data.length;i++){
     const r=data[i];
-    if(r&&r[4]&&(r[4] instanceof Date||(typeof r[4]==='string'&&r[4].match(/\d{2}\.\d{2}\.\d{4}/)))){
-      hdr=i;break;
-    }
+    if(!r)continue;
+    const hasDate=r.some(v=>v instanceof Date||(typeof v==='string'&&/^\d{2}\.\d{2}\.\d{4}/.test(String(v))));
+    if(hasDate){hdr=i;break;}
   }
   if(hdr<0) return new Map();
   
   const dateRow=data[hdr];
-  // Колонки с датами начиная с col 8 (индекс в датаРоу)
   const dateCols=[];
   for(let c=0;c<dateRow.length;c++){
     const v=dateRow[c];
     if(!v)continue;
-    if(v instanceof Date)dateCols.push({col:c,date:v});
-    else if(typeof v==='string'&&v.match(/\d{2}\.\d{2}\.\d{4}/))dateCols.push({col:c,date:pDate(v)});
+    if(v instanceof Date){
+      // Сохраняем и Date и строковый ключ MM.YYYY
+      const key=String(v.getUTCMonth()+1).padStart(2,'0')+'.'+v.getUTCFullYear();
+      dateCols.push({col:c,date:v,key});
+    } else if(typeof v==='string'&&/^\d{2}\.\d{2}\.\d{4}/.test(String(v))){
+      const parts=String(v).split(' ')[0].split('.');
+      const key=parts[1]+'.'+parts[2]; // MM.YYYY
+      dateCols.push({col:c,date:pDate(String(v)),key});
+    }
   }
   
   const result=new Map();
@@ -556,11 +592,16 @@ function parseArrivals(ws){
     
     let lastIdx=-1;
     let hasAny=false;
+    const monthlyArr=[];
+    const arrDates=[];
     for(let ci=0;ci<dateCols.length;ci++){
       const v=parseFloat(row[dateCols[ci].col])||0;
+      monthlyArr.push(v);
+      arrDates.push(dateCols[ci].date);
       if(v>0){hasAny=true;lastIdx=ci;}
     }
-    result.set(name,{lastIdx,hasAny,totalMonths:dateCols.length});
+    const arrKeys=dateCols.map(dc=>dc.key||null);
+    result.set(name,{lastIdx,hasAny,totalMonths:dateCols.length,monthlyArr,arrDates,arrKeys});
   }
   return result;
 }
@@ -737,6 +778,10 @@ function itemMatchesFilters(it){
     const zone=getStaleZone(it.staleMonths);
     if(!activeFilters.stale.has(zone))return false;
   }
+  if(activeFilters.age.size>0){
+    const zone=getAgeZone(it.stockAge||0);
+    if(!activeFilters.age.has(zone))return false;
+  }
   if(activeFilters.tags.size>0){
     const hasTag=it.tags.some(t=>activeFilters.tags.has(t));
     if(!hasTag)return false;
@@ -745,6 +790,7 @@ function itemMatchesFilters(it){
 }
 function getStaleZone(m){
   if(m<=3)return'ok';if(m<=6)return'w';if(m<=12)return'r';if(m<=24)return'c';return'd';
+function getAgeZone(m){if(!m||m<=0)return'ok';if(m<=CFG.ageZone1)return'ok';if(m<=CFG.ageZone2)return'w';if(m<=CFG.ageZone3)return'r';if(m<=CFG.ageZone4)return'c';return'd';}
 }
 function toggleFilter(type,val,el){
   const s=activeFilters[type];
@@ -754,7 +800,7 @@ function toggleFilter(type,val,el){
 }
 function resetAllFilters(){
   autoFilterIds=null;aiFilter=null;
-  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),tags:new Set()};
+  activeFilters={cats:new Set(),xyz:new Set(),stale:new Set(),age:new Set(),tags:new Set()};
   document.querySelectorAll('.fchip').forEach(e=>e.classList.remove('active'));
   applyFilters();renderFilterChips();renderTable();
 }
@@ -813,10 +859,16 @@ function renderFilterChips(){
     html+=`<span class="fchip xyz-${x.toLowerCase()} ${active?'active':''}" data-ftype="xyz" data-fval="${x}" onclick="toggleFilter('xyz','${x}',this)">${x}</span>`;
   }
   html+='<span class="toolbar-label" style="margin-left:8px">Залежалость:</span>';
-  const staleZones=[{k:'ok',l:'≤3мес',cls:'stale-ok'},{k:'w',l:'3-6мес',cls:'stale-w'},{k:'r',l:'6-12мес',cls:'stale-r'},{k:'c',l:'12-24мес',cls:'stale-c'},{k:'d',l:'>24мес',cls:'stale-d'}];
+  const staleZones=[{k:'ok',l:'≤'+CFG.staleZone1+'мес',cls:'stale-ok'},{k:'w',l:CFG.staleZone1+'-'+CFG.staleZone2+'мес',cls:'stale-w'},{k:'r',l:CFG.staleZone2+'-'+CFG.staleZone3+'мес',cls:'stale-r'},{k:'c',l:CFG.staleZone3+'-'+CFG.staleZone4+'мес',cls:'stale-c'},{k:'d',l:'>'+CFG.staleZone4+'мес',cls:'stale-d'}];
   for(const z of staleZones){
     const active=activeFilters.stale.has(z.k);
     html+=`<span class="fchip ${z.cls} ${active?'active':''}" data-ftype="stale" data-fval="${z.k}" onclick="toggleFilter('stale','${z.k}',this)">${z.l}</span>`;
+  }
+  html+='<span class="toolbar-label" style="margin-left:8px">Возраст ост.:</span>';
+  const ageZones=[{k:'ok',l:'&lt;'+CFG.ageZone1+'мес',cls:'stale-ok'},{k:'w',l:CFG.ageZone1+'-'+CFG.ageZone2+'мес',cls:'stale-w'},{k:'r',l:CFG.ageZone2+'-'+CFG.ageZone3+'мес',cls:'stale-r'},{k:'c',l:CFG.ageZone3+'-'+CFG.ageZone4+'мес',cls:'stale-c'},{k:'d',l:'&gt;'+CFG.ageZone4+'мес',cls:'stale-d'}];
+  for(const z of ageZones){
+    const active=activeFilters.age.has(z.k);
+    html+=`<span class="fchip ${z.cls} ${active?'active':''}" data-ftype="age" data-fval="${z.k}" onclick="toggleFilter('age','${z.k}',this)">${z.l}</span>`;
   }
   html+='<span class="toolbar-label" style="margin-left:8px">Метки:</span>';
   const tagDefs=[{k:'Новинка',cls:'tag-new'},{k:'ТО',cls:'tag-to'},{k:'ТНО',cls:'tag-tno'},{k:'Т',cls:'tag-t'},{k:'#',cls:'tag-hash'},{k:'БРАК',cls:'tag-brak'},{k:'Нарезка',cls:'tag-nar'},{k:'Каталог',cls:'tag-kat'},{k:'Акция',cls:'tag-akc'},{k:'СЗ',cls:'tag-sz'}];
@@ -1012,6 +1064,28 @@ function showChart(id){
   const stockObj=it._stockByDate||{};
   const months=it.months||[];
 
+  // Построить карту приходов по меткам месяцев для совмещения
+  // arrInfo.arrDates — даты приходов, arrInfo.monthlyArr — кол-во
+  const arrInfo=it._arrInfo;
+  // Создаём карту: shortMonth -> приход
+  const arrByMonth={};
+  let totalArr=0;
+  if(arrInfo&&arrInfo.arrKeys){
+    arrInfo.arrKeys.forEach((key,i)=>{
+      if(!key)return;
+      arrByMonth[key]=arrInfo.monthlyArr[i]||0;
+      totalArr+=arrInfo.monthlyArr[i]||0;
+    });
+  } else if(arrInfo&&arrInfo.arrDates){
+    // fallback: строим ключ из Date через UTC
+    arrInfo.arrDates.forEach((d,i)=>{
+      if(!d)return;
+      const key=String(d.getUTCMonth()+1).padStart(2,'0')+'.'+d.getUTCFullYear();
+      arrByMonth[key]=arrInfo.monthlyArr[i]||0;
+      totalArr+=arrInfo.monthlyArr[i]||0;
+    });
+  }
+
   let totalQty=0,totalRev=0;
   let rows='';
   for(let i=0;i<months.length;i++){
@@ -1019,33 +1093,38 @@ function showChart(id){
     const q=it.monthlyQty[i]||0;
     const r=it.monthlyRev[i]||0;
     totalQty+=q;totalRev+=r;
-    // Остаток на конец месяца — из stockByDate если есть
-    const stockKeys=Object.keys(stockObj);
     const stockVals=Object.values(stockObj);
     const stockVal=stockVals[i]!==undefined?stockVals[i]:null;
-    // Залежалость на этот момент (если есть остаток и есть продажи)
     const avgSoFar=it.avgQtyPerMonth>0?it.avgQtyPerMonth:0;
     const staleM=stockVal!==null&&avgSoFar>0?stockVal/avgSoFar:null;
     const staleCls=staleM!==null?getStaleCls(staleM):'';
     const shortM=m.replace(' г.','').replace('2025',"'25").replace('2026',"'26");
-    rows+=`<tr>
-      <td>${shortM}</td>
-      <td class="${q===0?'val-zero':'val-pos'}">${q===0?'—':fmtN(q)}</td>
-      <td class="${r===0?'val-zero':'val-pos'}">${r===0?'—':fmtM(r)}</td>
-      <td class="${stockVal===0||stockVal===null?'val-zero':'val-pos'}">${stockVal===null?'—':fmtN(stockVal)}</td>
-      <td class="stale-cell ${staleCls}">${staleM===null?'—':staleM>=999?'∞':staleM<1?Math.round(staleM*30)+'д':staleM.toFixed(1)+'мес'}</td>
-    </tr>`;
+    // Найти приход для этого месяца
+    // m формат: "Май 2025 г." -> ищем по номеру месяца и году
+    const monthNames={'Январь':'01','Февраль':'02','Март':'03','Апрель':'04','Май':'05','Июнь':'06','Июль':'07','Август':'08','Сентябрь':'09','Октябрь':'10','Ноябрь':'11','Декабрь':'12'};
+    const mParts=m.replace(' г.','').split(' ');
+    const mKey=monthNames[mParts[0]]?(monthNames[mParts[0]]+'.'+mParts[1]):null;
+    const arrVal=mKey&&arrByMonth[mKey]!==undefined?arrByMonth[mKey]:null;
+    const arrCls=arrVal===null?'val-zero':arrVal>0?'val-arr':'val-zero';
+    rows+='<tr>'
+      +'<td>'+shortM+'</td>'
+      +'<td class="'+(q===0?'val-zero':'val-pos')+'">'+(q===0?'—':fmtN(q))+'</td>'
+      +'<td class="'+(r===0?'val-zero':'val-pos')+'">'+(r===0?'—':fmtM(r))+'</td>'
+      +'<td style="'+(arrVal!==null&&arrVal>0?'color:#60aaff;font-weight:600':'color:var(--text3)')+'">'+(arrVal===null?'н/д':arrVal===0?'—':'+'+fmtN(arrVal))+'</td>'
+      +'<td class="'+(stockVal===0||stockVal===null?'val-zero':'val-pos')+'">'+(stockVal===null?'—':fmtN(stockVal))+'</td>'
+      +'<td class="stale-cell '+staleCls+'">'+(staleM===null?'—':staleM>=999?'∞':staleM<1?Math.round(staleM*30)+'д':staleM.toFixed(1)+'мес')+'</td>'
+      +'</tr>';
   }
-  // Итоговая строка
   const finalStale=it.avgQtyPerMonth>0?it.currentStock/it.avgQtyPerMonth:null;
   const finalStaleCls=finalStale!==null?getStaleCls(finalStale):'';
-  rows+=`<tr class="summary-row">
-    <td>ИТОГО / ТЕКУЩИЙ</td>
-    <td>${fmtN(totalQty)} шт</td>
-    <td>${fmtM(totalRev)} ₸</td>
-    <td>${fmtN(it.currentStock)} шт</td>
-    <td class="stale-cell ${finalStaleCls}">${finalStale===null?'—':finalStale>=999?'∞':fmtStale(finalStale)}</td>
-  </tr>`;
+  rows+='<tr class="summary-row">'
+    +'<td>ИТОГО / ТЕКУЩИЙ</td>'
+    +'<td>'+fmtN(totalQty)+' шт</td>'
+    +'<td>'+fmtM(totalRev)+' ₸</td>'
+    +'<td style="color:#60aaff;font-weight:600">'+(totalArr>0?'+'+fmtN(totalArr)+' шт':'н/д')+'</td>'
+    +'<td>'+fmtN(it.currentStock)+' шт</td>'
+    +'<td class="stale-cell '+finalStaleCls+'">'+(finalStale===null?'—':finalStale>=999?'∞':fmtStale(finalStale))+'</td>'
+    +'</tr>';
 
   document.getElementById('chartBars').innerHTML=`
     <table class="detail-table">
@@ -1053,6 +1132,7 @@ function showChart(id){
         <th>Месяц</th>
         <th>Продажи шт</th>
         <th>Выручка ₸</th>
+        <th>Приход шт</th>
         <th>Остаток шт</th>
         <th>Залежалость</th>
       </tr></thead>
@@ -1207,6 +1287,7 @@ function switchTab(tab,btn){
   if(isMain)renderTable();
   else if(tab==='vyvod')renderVyvod();
   else if(tab==='settings'){renderSettings();}
+  else if(tab==='help'){renderHelp();}
   else{const idx=parseInt(tab.replace('report_',''));renderCustomReport(idx);}
 }
 
@@ -1540,10 +1621,34 @@ function renderSettings(){
     cfgRow('Считать новинкой за последние:', 'cfg_newItemMonths', 1, 6, 'месяцев')
   );
 
-  const autoBlock = block('var(--orange)','⚡','Авто-вывод','Критерии формульного авто-вывода. Новинки всегда исключаются.',
-    cfgRow('Категория D + залежалость больше:', 'cfg_autoVyvodStale', 3, 36, 'мес')
-    +cfgRow('Любая категория, залежалость больше:', 'cfg_autoVyvodSuperStale', 12, 60, 'мес')
-    +cfgRow('Минимальный остаток для категории «Опт»:', 'cfg_optMinStock', 10, 500, 'шт')
+  function cbRow(id, label, numId, numMin, numMax, numUnit){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<input type="checkbox" id="'+id+'" class="cfg-cb" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;flex-shrink:0">'
+      +'<label for="'+id+'" style="font-size:11px;color:var(--text2);flex:1;cursor:pointer">'+label+'</label>'
+      +(numId?'<input id="'+numId+'" type="number" min="'+numMin+'" max="'+numMax+'" value="" class="cfg-input" style="width:58px">':'')
+      +(numUnit?'<span style="font-size:10px;color:var(--text3)">'+numUnit+'</span>':'')
+      +'</div>';
+  }
+  const autoBlock = block('var(--orange)','⚡','Авто-вывод — настройка условий',
+    'Включите нужные условия. Позиция попадает в авто-вывод если выполнено <b>хотя бы одно</b> включённое условие. Новинки всегда исключаются.',
+    '<div style="margin-bottom:14px">'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Основные условия:</div>'
+    +cbRow('cfg_avEnabled_dStale','Категория D + залежалость больше','cfg_autoVyvodStale',3,36,'мес')
+    +cbRow('cfg_avEnabled_superStale','Любая категория, залежалость больше','cfg_autoVyvodSuperStale',12,60,'мес')
+    +cbRow('cfg_avEnabled_noSales','Нет продаж при наличии остатка','','','','')
+    +'</div>'
+    +'<div style="margin-bottom:14px">'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Дополнительные условия (по возрасту и тренду):</div>'
+    +cbRow('cfg_avEnabled_age','Возраст остатка больше (любая категория)','cfg_avAge',3,36,'мес')
+    +cbRow('cfg_avEnabled_ageCd','Возраст остатка больше + категория C или D','cfg_avAgeCd',3,24,'мес')
+    +cbRow('cfg_avEnabled_dz','Категория D + нестабильные продажи (XYZ = Z)','','','','')
+    +cbRow('cfg_avEnabled_trend','Залежалость больше + тренд «падение»','cfg_avTrendStale',3,24,'мес')
+    +'</div>'
+    +'<div style="border-top:1px solid var(--border);padding-top:12px">'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Защита и прочее:</div>'
+    +cbRow('cfg_avExcludeAB','Не включать категории A и B (защита топ-товаров)','','','','')
+    +cfgRow('Минимальный остаток для категории «Опт» (ИИ):','cfg_optMinStock',10,500,'шт')
+    +'</div>'
   );
 
   const zonesBlock = block('var(--red)','🔴','Зоны залежалости и возраста остатка','Границы цветовых зон: зелёный / жёлтый / оранжевый / красный / тёмно-красный.',
@@ -1575,6 +1680,135 @@ function renderSettings(){
     +'</div></div>';
 
   setTimeout(fillSettingsForm, 10);
+}
+
+function renderHelp(){
+  const container=document.getElementById('tableContainer');
+  const dw=document.getElementById('dashboardWrap');
+  if(dw)dw.style.display='none';
+
+  function section(icon, title, color, body){
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px">'
+      +'<div style="font-size:15px;font-weight:700;margin-bottom:12px;color:'+color+'">'+icon+' '+title+'</div>'
+      +body+'</div>';
+  }
+  function row(term, desc){
+    return '<div style="display:grid;grid-template-columns:220px 1fr;gap:12px;padding:7px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text);font-family:JetBrains Mono,monospace">'+term+'</div>'
+      +'<div style="font-size:11px;color:var(--text2);line-height:1.6">'+desc+'</div>'
+      +'</div>';
+  }
+  function formula(name, f, desc){
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px">'+name+'</div>'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:11px;background:var(--surface3);padding:6px 10px;border-radius:5px;margin-bottom:4px;color:#60aaff">'+f+'</div>'
+      +'<div style="font-size:11px;color:var(--text2);line-height:1.6">'+desc+'</div>'
+      +'</div>';
+  }
+
+  const html = '<div style="padding:24px;max-width:860px">'
+    +'<div style="font-size:20px;font-weight:700;margin-bottom:4px">❓ Справка по системе аналитики</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-bottom:24px">Описание всех показателей, формул, категорий и настроек.</div>'
+
+    // ФОРМУЛЫ
+    +section('🧮','Ключевые формулы и показатели','#4f8ef7',
+      formula('Средние продажи в месяц (активные)',
+        'Ср/мес = Сумма продаж ÷ Кол-во месяцев с ненулевыми продажами',
+        'Делим только на активные месяцы — месяцы где товара не было на складе (нули) не учитываются. Это даёт реальный темп продаж, а не заниженный из-за отсутствия товара.')
+      +formula('Залежалость (сколько продаваться)',
+        'Залежалость = Текущий остаток ÷ Ср/мес',
+        'Показывает сколько месяцев уйдёт на продажу текущего остатка при сохранении текущего темпа. Чем выше — тем хуже. Для новинок и сезонных товаров показатель может быть некорректным.')
+      +formula('Возраст остатка (сколько уже лежит)',
+        'Возраст = Кол-во месяцев с последнего прихода товара',
+        'Если есть вкладка Поступление — считается от последней даты прихода. Если прихода в периоде не было — возраст ≥ длины периода поступлений. Без вкладки Поступление — ищем последний скачок остатка вверх. Показывает как долго текущий остаток уже лежит на складе.')
+      +formula('Коэффициент вариации CV (для XYZ)',
+        'CV = Стандартное отклонение ÷ Среднее × 100%',
+        'Мера нестабильности продаж. Считается по ненулевым месяцам. Чем выше CV — тем непредсказуемее спрос.')
+    )
+
+    // ABCD
+    +section('📊','ABCD-анализ','#4f8ef7',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Ранжирует товары по вкладу в выручку (или в штучные продажи). Пороги настраиваются в ⚙ Настройки.</div>'
+      +row('A — '+CFG.abcdA+'% выручки','Ключевые товары. Приоритет в закупках, следить за наличием. Потеря = прямая потеря выручки.')
+      +row('B — '+CFG.abcdB+'% выручки','Важные товары. Держать в ассортименте, следить за остатками.')
+      +row('C — '+CFG.abcdC+'% выручки','Второстепенные. Рассмотреть оптимизацию объёмов закупок.')
+      +row('D — '+CFG.abcdD+'% выручки','Слабые продажи. Первые кандидаты на вывод из ассортимента.')
+    )
+
+    // XYZ
+    +section('📈','XYZ-анализ','#2ecc71',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Оценивает стабильность спроса по коэффициенту вариации (CV). Пороги настраиваются в ⚙ Настройки.</div>'
+      +row('X — CV &lt; '+CFG.xyzX+'%','Стабильные продажи. Спрос предсказуем, легко планировать закупки. Минимальный страховой запас.')
+      +row('Y — CV '+CFG.xyzX+'–'+CFG.xyzY+'%','Умеренно нестабильные. Есть колебания (сезонность, акции). Нужен страховой запас.')
+      +row('Z — CV &gt; '+CFG.xyzY+'%','Непредсказуемые или сезонные. Закупать осторожно, не выводить в «не сезон».')
+    )
+
+    // ЗОНЫ
+    +section('🔴','Цветовые зоны залежалости и возраста','var(--orange)',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Одна шкала используется для обоих показателей. Границы настраиваются в ⚙ Настройки.</div>'
+      +row('🟢 Зелёный — норма','Залежалость/возраст ≤ '+CFG.staleZone1+' мес. Всё в порядке.')
+      +row('🟡 Жёлтый — внимание',''+CFG.staleZone1+'–'+CFG.staleZone2+' мес. Мониторинг, превентивные меры.')
+      +row('🟠 Оранжевый — риск',''+CFG.staleZone2+'–'+CFG.staleZone3+' мес. Нужны активные действия.')
+      +row('🔴 Красный — неликвид',''+CFG.staleZone3+'–'+CFG.staleZone4+' мес. Срочные меры.')
+      +row('⛔ Тёмно-красный — критично','&gt; '+CFG.staleZone4+' мес. Экстренные меры.')
+    )
+
+    // ИИ РЕКОМЕНДАЦИИ
+    +section('🤖','ИИ-рекомендации — категории действий','#c080ff',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Claude анализирует каждую позицию по всем показателям и присваивает одну из 6 категорий.</div>'
+      +row('🔴 Вывод','Залежалость &gt;12 мес + кат D или тренд падение, или нет продаж при остатке. Переводить в Решётку → ТНО.')
+      +row('🟣 Опт','Залежалость &gt;6 мес + большой остаток (&gt;'+CFG.optMinStock+' шт). Оптовая рассылка со скидкой, не розница.')
+      +row('🟡 Акция','Залежалость 6–12 мес + небольшой остаток. Скидка 20–30% в рознице.')
+      +row('🟢 Мотивация','Залежалость 3–6 мес. Добавить в мотивацию консультантов, без скидок.')
+      +row('🟡 Ждать','Новинка, сезонный товар (XYZ=Z), или тренд роста. Не трогать.')
+      +row('🟢 Норма','Кат A/B, залежалость &lt;3 мес, стабильные продажи. Всё хорошо.')
+    )
+
+    // АВТО-ВЫВОД
+    +section('⚡','Авто-вывод (формульный)','var(--orange)',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Работает без ИИ по настроенным правилам. Позиция попадает в список если выполнено хотя бы одно включённое условие. Новинки всегда исключаются. Настройки — в ⚙.</div>'
+      +row('Кат D + залежалость','Наиболее очевидные кандидаты — слабые продажи и долго не продастся.')
+      +row('Супер-залежалость','Любая категория, но срок продажи очень большой.')
+      +row('Нет продаж + остаток','Товар на складе, но не продаётся совсем.')
+      +row('Возраст остатка','Товар давно не получал пополнений — текущие единицы лежат долго.')
+      +row('Возраст + кат C/D','Мягче: лежит давно и при этом не приоритетный товар.')
+      +row('Кат D + XYZ Z','Слабые и нестабильные продажи — сложно планировать, лучше вывести.')
+      +row('Тренд падение','Продажи снижаются + уже залежался — ситуация ухудшается.')
+    )
+
+    // МЕТКИ
+    +section('🏷','Метки позиций','var(--teal)',
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Определяются автоматически по наименованию товара. Используйте фильтры по меткам для массовых операций.</div>'
+      +row('ТНО','Товар низкой обращаемости — уже на выводе. Рекомендуется удалить из анализа.')
+      +row('ТО','Товар на выводе. Аналогично ТНО.')
+      +row('Т','Суффикс в конце наименования.')
+      +row('#','Позиция в Решётке — первая стадия вывода.')
+      +row('БРАК','Бракованный товар. Удалить из анализа.')
+      +row('Нарезка','Нарезанный товар. Обычно удаляется из основного анализа.')
+      +row('Каталог','Каталожная позиция. Может не продаваться — витринная функция.')
+      +row('Акция','Позиция в акции.')
+      +row('СЗ','Специальный заказ.')
+      +row('🌱 Новинка','Первые остатки появились в последние '+CFG.newItemMonths+' мес. Исключается из авто-вывода, залежалость может быть некорректной.')
+    )
+
+    // РАБОЧИЙ ПРОЦЕСС
+    +section('📋','Рекомендуемый рабочий процесс','var(--text2)',
+      '<div style="font-size:11px;color:var(--text2);line-height:1.8">'
+      +'<b style="color:var(--text)">1.</b> Загрузить файл (Продажи + Остатки + Поступление)<br>'
+      +'<b style="color:var(--text)">2.</b> Нажать «🗑 Удалить нулевые остатки» — убрать позиции без остатков<br>'
+      +'<b style="color:var(--text)">3.</b> Через фильтр по меткам выделить и удалить: БРАК, Нарезка, Каталог (если нужно)<br>'
+      +'<b style="color:var(--text)">4.</b> Отчёт пересчитается — смотрим реальную картину<br>'
+      +'<b style="color:var(--text)">5.</b> Использовать фильтры по категориям, залежалости, возрасту для анализа<br>'
+      +'<b style="color:var(--text)">6.</b> Нажать «⚡ Авто-вывод» для быстрой пометки очевидных кандидатов<br>'
+      +'<b style="color:var(--text)">7.</b> Запустить «🤖 ИИ-рекомендации» для детального анализа<br>'
+      +'<b style="color:var(--text)">8.</b> Проверить отмеченные позиции, снять лишние галочки, нажать «📤 На вывод»<br>'
+      +'<b style="color:var(--text)">9.</b> Сохранить отчёт «На вывод» в Excel для передачи<br>'
+      +'</div>'
+    )
+
+    +'</div>';
+
+  container.innerHTML=html;
 }
 
 function resetApp(){
