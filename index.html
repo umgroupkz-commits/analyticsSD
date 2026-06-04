@@ -1409,124 +1409,6 @@ function renderSettings(){
   const container=document.getElementById('tableContainer');
   const dw=document.getElementById('dashboardWrap');
   if(dw)dw.style.display='none';
-  const s=CFG;
-  container.innerHTML=`
-  <div style="padding:24px;max-width:760px">
-    <div style="font-size:18px;font-weight:700;margin-bottom:6px">⚙ Настройки аналитики</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Все изменения сохраняются в браузере и применяются сразу после нажатия «Сохранить».</div>
-
-    <div style="display:grid;gap:20px">
-
-      <!-- НОВИНКА -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--teal)">🌱 Новинка</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Позиция считается новинкой если первый остаток появился в последние N месяцев периода. Новинки не включаются в авто-вывод.</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <label style="font-size:11px;color:var(--text2);min-width:200px">Считать новинкой за последние:</label>
-          <input id="cfg_newItemMonths" type="number" min="1" max="6" value="${s.newItemMonths}" style="width:70px" class="cfg-input">
-          <span style="font-size:11px;color:var(--text3)">месяцев</span>
-        </div>
-      </div>
-
-      <!-- ABCD -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#4f8ef7">📊 ABCD-анализ (пороги в %)</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Сумма A+B+C+D должна быть 100%. По умолчанию: 50/30/15/5.</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-          ${['A','B','C','D'].map((c,i)=>{
-            const id='cfg_abcd'+c;const val=[s.abcdA,s.abcdB,s.abcdC,s.abcdD][i];
-            const color=['#4f8ef7','#7c6af7','#f1c40f','#8892b0'][i];
-            return\`<div style="text-align:center">
-              <div style="font-size:11px;font-weight:700;color:\${color};margin-bottom:6px">Категория \${c}</div>
-              <input id="\${id}" type="number" min="1" max="90" value="\${val}" class="cfg-input" style="width:70px;text-align:center">
-              <div style="font-size:9px;color:var(--text3);margin-top:3px">%</div>
-            </div>\`;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- XYZ -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#2ecc71">📈 XYZ-анализ (коэффициент вариации CV%)</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">X = стабильные продажи (CV меньше порога X). Y = переменные. Z = непредсказуемые/сезонные. Для обоев рекомендуем X=35%, Y=75%.</div>
-        <div style="display:flex;gap:20px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;color:#2ecc71;font-weight:700">X</span>
-            <span style="font-size:11px;color:var(--text2)">CV &lt;</span>
-            <input id="cfg_xyzX" type="number" min="5" max="50" value="${s.xyzX}" class="cfg-input" style="width:60px">
-            <span style="font-size:11px;color:var(--text3)">%</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;color:#e67e22;font-weight:700">Y</span>
-            <span style="font-size:11px;color:var(--text2)">CV &lt;</span>
-            <input id="cfg_xyzY" type="number" min="20" max="100" value="${s.xyzY}" class="cfg-input" style="width:60px">
-            <span style="font-size:11px;color:var(--text3)">% (выше = Z)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- АВТО-ВЫВОД -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--orange)">⚡ Авто-вывод (формульный)</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Критерии для кнопки «Авто-вывод». Позиции новинок всегда исключаются.</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:11px;color:var(--text2);min-width:280px">Категория D + залежалость больше:</label>
-            <input id="cfg_autoVyvodStale" type="number" min="3" max="36" value="${s.autoVyvodStale}" class="cfg-input" style="width:60px">
-            <span style="font-size:11px;color:var(--text3)">мес</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:11px;color:var(--text2);min-width:280px">Любая категория, залежалость больше:</label>
-            <input id="cfg_autoVyvodSuperStale" type="number" min="12" max="60" value="${s.autoVyvodSuperStale}" class="cfg-input" style="width:60px">
-            <span style="font-size:11px;color:var(--text3)">мес</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:11px;color:var(--text2);min-width:280px">Минимальный остаток для категории «Опт»:</label>
-            <input id="cfg_optMinStock" type="number" min="10" max="500" value="${s.optMinStock}" class="cfg-input" style="width:60px">
-            <span style="font-size:11px;color:var(--text3)">шт</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ЗОНЫ ЗАЛЕЖАЛОСТИ -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--red)">🔴 Зоны залежалости и возраста остатка (мес)</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Границы цветовых зон: зелёный / жёлтый / оранжевый / красный / тёмно-красный</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--text2)">Залежалость (сколько продаваться)</div>
-            ${[['cfg_staleZone1','≤','#2ecc71'],['cfg_staleZone2','≤','#f1c40f'],['cfg_staleZone3','≤','#e67e22'],['cfg_staleZone4','≤','#e74c3c']].map((z,i)=>{
-              const val=[s.staleZone1,s.staleZone2,s.staleZone3,s.staleZone4][i];
-              return\`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <div style="width:10px;height:10px;border-radius:50%;background:\${z[2]};flex-shrink:0"></div>
-                <span style="font-size:10px;color:var(--text2);min-width:20px">\${z[1]}</span>
-                <input id="\${z[0]}" type="number" min="1" max="60" value="\${val}" class="cfg-input" style="width:55px">
-                <span style="font-size:10px;color:var(--text3)">мес</span>
-              </div>\`;
-            }).join('')}
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--text2)">Возраст остатка (сколько уже лежит)</div>
-            ${[['cfg_ageZone1','≤','#2ecc71'],['cfg_ageZone2','≤','#f1c40f'],['cfg_ageZone3','≤','#e67e22'],['cfg_ageZone4','≤','#e74c3c']].map((z,i)=>{
-              const val=[s.ageZone1,s.ageZone2,s.ageZone3,s.ageZone4][i];
-              return\`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <div style="width:10px;height:10px;border-radius:50%;background:\${z[2]};flex-shrink:0"></div>
-                <span style="font-size:10px;color:var(--text2);min-width:20px">\${z[1]}</span>
-                <input id="\${z[0]}" type="number" min="1" max="60" value="\${val}" class="cfg-input" style="width:55px">
-                <span style="font-size:10px;color:var(--text3)">мес</span>
-              </div>\`;
-            }).join('')}
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div style="margin-top:20px;display:flex;gap:10px">
-      <button class="btn btn-primary" onclick="applySettingsFromForm()">✓ Сохранить и применить</button>
-      <button class="btn btn-ghost" onclick="resetSettings()">↺ Сбросить к умолчаниям</button>
-    </div>
-  </div>`;
 
   // Стили для инпутов настроек
   if(!document.getElementById('cfgStyle')){
@@ -1534,7 +1416,87 @@ function renderSettings(){
     st.textContent='.cfg-input{background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:12px;font-family:JetBrains Mono,monospace;outline:none;}.cfg-input:focus{border-color:var(--accent);}';
     document.head.appendChild(st);
   }
-  // Заполнить форму текущими значениями (вызвать после рендера DOM)
+
+  function cfgRow(label, id, min, max, unit){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<label style="font-size:11px;color:var(--text2);min-width:280px">'+label+'</label>'
+      +'<input id="'+id+'" type="number" min="'+min+'" max="'+max+'" value="" class="cfg-input" style="width:65px">'
+      +'<span style="font-size:11px;color:var(--text3)">'+unit+'</span>'
+      +'</div>';
+  }
+  function block(color, icon, title, desc, body){
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:4px;color:'+color+'">'+icon+' '+title+'</div>'
+      +'<div style="font-size:11px;color:var(--text2);margin-bottom:14px">'+desc+'</div>'
+      +body
+      +'</div>';
+  }
+  function dotZone(id, color, lbl, val){
+    return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">'
+      +'<div style="width:10px;height:10px;border-radius:50%;background:'+color+';flex-shrink:0"></div>'
+      +'<span style="font-size:10px;color:var(--text2);min-width:16px">'+lbl+'</span>'
+      +'<input id="'+id+'" type="number" min="1" max="60" value="'+val+'" class="cfg-input" style="width:55px">'
+      +'<span style="font-size:10px;color:var(--text3)">мес</span>'
+      +'</div>';
+  }
+
+  const s = CFG;
+
+  const abcdBlock = block('#4f8ef7','📊','ABCD-анализ (пороги в %)','Сумма A+B+C+D должна равняться 100%. По умолчанию: 50/30/15/5.',
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'
+    +[['A','#4f8ef7',s.abcdA,'cfg_abcdA'],['B','#7c6af7',s.abcdB,'cfg_abcdB'],['C','#f1c40f',s.abcdC,'cfg_abcdC'],['D','#8892b0',s.abcdD,'cfg_abcdD']].map(function(x){
+      return '<div style="text-align:center"><div style="font-size:11px;font-weight:700;color:'+x[1]+';margin-bottom:6px">Кат. '+x[0]+'</div>'
+        +'<input id="'+x[3]+'" type="number" min="1" max="90" value="'+x[2]+'" class="cfg-input" style="width:64px;text-align:center">'
+        +'<div style="font-size:9px;color:var(--text3);margin-top:3px">%</div></div>';
+    }).join('')
+    +'</div>'
+  );
+
+  const xyzBlock = block('#2ecc71','📈','XYZ-анализ (коэффициент вариации CV%)','X = стабильные, Y = переменные, Z = сезонные/непредсказуемые. Для обоев рекомендуем X=35%, Y=75%.',
+    '<div style="display:flex;gap:20px">'
+    +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#2ecc71;font-weight:700">X</span><span style="font-size:11px;color:var(--text2)">CV &lt;</span><input id="cfg_xyzX" type="number" min="5" max="50" value="'+s.xyzX+'" class="cfg-input" style="width:60px"><span style="font-size:11px;color:var(--text3)">%</span></div>'
+    +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#e67e22;font-weight:700">Y</span><span style="font-size:11px;color:var(--text2)">CV &lt;</span><input id="cfg_xyzY" type="number" min="20" max="100" value="'+s.xyzY+'" class="cfg-input" style="width:60px"><span style="font-size:11px;color:var(--text3)">% (выше = Z)</span></div>'
+    +'</div>'
+  );
+
+  const newItemBlock = block('var(--teal)','🌱','Новинка','Позиция считается новинкой если первый остаток появился в последние N месяцев. Новинки исключаются из авто-вывода.',
+    cfgRow('Считать новинкой за последние:', 'cfg_newItemMonths', 1, 6, 'месяцев')
+  );
+
+  const autoBlock = block('var(--orange)','⚡','Авто-вывод','Критерии формульного авто-вывода. Новинки всегда исключаются.',
+    cfgRow('Категория D + залежалость больше:', 'cfg_autoVyvodStale', 3, 36, 'мес')
+    +cfgRow('Любая категория, залежалость больше:', 'cfg_autoVyvodSuperStale', 12, 60, 'мес')
+    +cfgRow('Минимальный остаток для категории «Опт»:', 'cfg_optMinStock', 10, 500, 'шт')
+  );
+
+  const zonesBlock = block('var(--red)','🔴','Зоны залежалости и возраста остатка','Границы цветовых зон: зелёный / жёлтый / оранжевый / красный / тёмно-красный.',
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'
+    +'<div><div style="font-size:11px;font-weight:600;margin-bottom:10px;color:var(--text2)">Залежалость (сколько продаваться)</div>'
+    +dotZone('cfg_staleZone1','#2ecc71','≤',s.staleZone1)
+    +dotZone('cfg_staleZone2','#f1c40f','≤',s.staleZone2)
+    +dotZone('cfg_staleZone3','#e67e22','≤',s.staleZone3)
+    +dotZone('cfg_staleZone4','#e74c3c','≤',s.staleZone4)
+    +'</div>'
+    +'<div><div style="font-size:11px;font-weight:600;margin-bottom:10px;color:var(--text2)">Возраст остатка (сколько уже лежит)</div>'
+    +dotZone('cfg_ageZone1','#2ecc71','≤',s.ageZone1)
+    +dotZone('cfg_ageZone2','#f1c40f','≤',s.ageZone2)
+    +dotZone('cfg_ageZone3','#e67e22','≤',s.ageZone3)
+    +dotZone('cfg_ageZone4','#e74c3c','≤',s.ageZone4)
+    +'</div>'
+    +'</div>'
+  );
+
+  container.innerHTML = '<div style="padding:24px;max-width:780px">'
+    +'<div style="font-size:18px;font-weight:700;margin-bottom:6px">⚙ Настройки аналитики</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-bottom:24px">Настройки хранятся в браузере. Нажмите «Сохранить» — всё пересчитается автоматически.</div>'
+    +'<div style="display:grid;gap:16px">'
+    +newItemBlock+abcdBlock+xyzBlock+autoBlock+zonesBlock
+    +'</div>'
+    +'<div style="margin-top:20px;display:flex;gap:10px">'
+    +'<button class="btn btn-primary" onclick="applySettingsFromForm()">✓ Сохранить и применить</button>'
+    +'<button class="btn btn-ghost" onclick="resetSettings()">↺ Сбросить к умолчаниям</button>'
+    +'</div></div>';
+
   setTimeout(fillSettingsForm, 10);
 }
 
