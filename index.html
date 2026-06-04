@@ -170,16 +170,25 @@ tr.hidden-row{display:none}
 .modal-input:focus{border-color:var(--accent)}
 .modal-btns{display:flex;gap:7px;justify-content:flex-end}
 /* CHART MODAL */
-.chart-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:680px;width:95%}
+.chart-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:860px;width:96%;max-height:90vh;display:flex;flex-direction:column}
 .chart-title{font-size:14px;font-weight:700;margin-bottom:4px}
-.chart-sub{font-size:11px;color:var(--text2);margin-bottom:18px}
-.chart-bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding-bottom:4px}
-.chart-bar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;height:100%}
-.chart-bar{width:100%;border-radius:3px 3px 0 0;background:var(--accent);min-height:2px;transition:opacity .2s;margin-top:auto}
-.chart-bar:hover{opacity:.8}
-.chart-label{font-size:8px;color:var(--text3);margin-top:4px;text-align:center;transform:rotate(-30deg);transform-origin:center top;white-space:nowrap}
-.chart-val{font-size:8px;color:var(--text2);margin-bottom:2px;font-family:'JetBrains Mono',monospace}
-.chart-grid{position:relative}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.detail-table-wrap{overflow:auto;flex:1}
+.detail-table{width:100%;border-collapse:collapse;font-size:11px}
+.detail-table th{background:var(--surface3);padding:8px 10px;text-align:right;font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);white-space:nowrap;position:sticky;top:0}
+.detail-table th:first-child{text-align:left}
+.detail-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px}
+.detail-table td:first-child{text-align:left;font-family:'Geologica',sans-serif;color:var(--text2);white-space:nowrap}
+.detail-table tr:hover td{background:var(--surface2)}
+.detail-table tr.summary-row td{background:var(--surface3);font-weight:700;border-top:2px solid var(--border2);color:var(--text)}
+.detail-table .val-zero{color:var(--text3)}
+.detail-table .val-pos{color:var(--text)}
+.detail-table .stale-cell{font-weight:600}
+.detail-table .stale-ok{color:var(--green)}
+.detail-table .stale-warn{color:var(--yellow)}
+.detail-table .stale-danger{color:var(--orange)}
+.detail-table .stale-critical{color:var(--red)}
+.detail-table .stale-dead{color:var(--red2)}
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:rgba(15,17,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500}
 .loading-spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
@@ -247,6 +256,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
   <div class="tabs-bar" id="tabsBar">
     <button class="tab-btn active" data-tab="main" onclick="switchTab('main',this)">Основной отчёт</button>
     <button class="tab-btn" data-tab="vyvod" onclick="switchTab('vyvod',this)">📤 На вывод <span id="vyvodCount" class="badge badge-D" style="margin-left:3px">0</span></button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)" style="margin-left:auto">⚙ Настройки</button>
   </div>
   <!-- DASHBOARD -->
   <div class="dashboard-wrap" id="dashboardWrap">
@@ -325,13 +335,15 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
     </div>
   </div>
 </div>
-<!-- CHART MODAL -->
+<!-- DETAIL MODAL -->
 <div class="modal-overlay" id="chartOverlay" style="display:none" onclick="if(event.target===this)document.getElementById('chartOverlay').style.display='none'">
   <div class="chart-modal">
     <div class="chart-title" id="chartTitle"></div>
     <div class="chart-sub" id="chartSub"></div>
-    <div id="chartBars" class="chart-bars"></div>
-    <div style="margin-top:12px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('chartOverlay').style.display='none'">Закрыть</button></div>
+    <div class="detail-table-wrap" id="chartBars"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;flex-shrink:0">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('chartOverlay').style.display='none'">Закрыть</button>
+    </div>
   </div>
 </div>
 </div>
@@ -349,6 +361,83 @@ let aiRecsMap={};
 let sortCol=null, sortDir=-1;
 let modalCallback=null;
 let apiKey=localStorage.getItem('ato_api_key')||'';
+
+// ==================== SETTINGS ====================
+const SETTINGS_KEY='ato_settings_v1';
+const DEFAULT_SETTINGS={
+  newItemMonths:3,        // сколько последних месяцев считать новинкой
+  abcdA:50, abcdB:30, abcdC:15, abcdD:5,  // % порогов ABCD
+  xyzX:35, xyzY:75,       // CV% границы XYZ (X<xyzX%, Y<xyzY%)
+  autoVyvodStale:12,      // залежалость для D+стале авто-вывода
+  autoVyvodSuperStale:24, // супер-залежалость любой категории
+  optMinStock:50,         // минимальный остаток для категории Опт
+  staleZone1:3, staleZone2:6, staleZone3:12, staleZone4:24, // зоны залежалости
+  ageZone1:3, ageZone2:6, ageZone3:12, ageZone4:24,  // зоны возраста остатка
+};
+let CFG={...DEFAULT_SETTINGS};
+function loadSettings(){
+  try{const s=localStorage.getItem(SETTINGS_KEY);if(s)CFG={...DEFAULT_SETTINGS,...JSON.parse(s)};}
+  catch(e){CFG={...DEFAULT_SETTINGS};}
+}
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY,JSON.stringify(CFG));
+}
+function applySettingsFromForm(){
+  const f=id=>{const el=document.getElementById(id);return el?parseFloat(el.value)||0:0;};
+  CFG.newItemMonths=f('cfg_newItemMonths');
+  CFG.abcdA=f('cfg_abcdA');CFG.abcdB=f('cfg_abcdB');CFG.abcdC=f('cfg_abcdC');
+  CFG.xyzX=f('cfg_xyzX');CFG.xyzY=f('cfg_xyzY');
+  CFG.autoVyvodStale=f('cfg_autoVyvodStale');CFG.autoVyvodSuperStale=f('cfg_autoVyvodSuperStale');
+  CFG.optMinStock=f('cfg_optMinStock');
+  CFG.staleZone1=f('cfg_staleZone1');CFG.staleZone2=f('cfg_staleZone2');
+  CFG.staleZone3=f('cfg_staleZone3');CFG.staleZone4=f('cfg_staleZone4');
+  CFG.ageZone1=f('cfg_ageZone1');CFG.ageZone2=f('cfg_ageZone2');
+  CFG.ageZone3=f('cfg_ageZone3');CFG.ageZone4=f('cfg_ageZone4');
+  saveSettings();
+  // Пересчитать всё с новыми настройками
+  if(allItems.length){
+    allItems.forEach(it=>{
+      // Пересчитать isNewItem
+      const stockVals=Object.values(it._stockByDate||{});
+      const firstStockIdx=stockVals.findIndex(v=>v>0);
+      const isNewByStock=firstStockIdx>=0&&firstStockIdx>=(stockVals.length-CFG.newItemMonths);
+      const firstSaleIdx=(it.monthlyQty||[]).findIndex(v=>v>0);
+      const isNewBySale=firstSaleIdx>=0&&firstSaleIdx>=(it.monthlyQty.length-2)&&it.totalQty<(it.avgQtyPerMonth*3);
+      const wasNew=it.isNewItem;
+      it.isNewItem=(isNewByStock||isNewBySale)&&!it.tags.includes('ТО')&&!it.tags.includes('ТНО');
+      // Обновить тег Новинка
+      it.tags=it.tags.filter(t=>t!=='Новинка');
+      if(it.isNewItem)it.tags.push('Новинка');
+    });
+    recomputeCategories();
+    renderAll();
+  }
+  alert('✓ Настройки сохранены и применены');
+}
+function resetSettings(){
+  if(!confirm('Сбросить все настройки к значениям по умолчанию?'))return;
+  CFG={...DEFAULT_SETTINGS};
+  saveSettings();
+  fillSettingsForm();
+  if(allItems.length){recomputeCategories();renderAll();}
+}
+function fillSettingsForm(){
+  const fields={
+    cfg_newItemMonths:CFG.newItemMonths,
+    cfg_abcdA:CFG.abcdA,cfg_abcdB:CFG.abcdB,cfg_abcdC:CFG.abcdC,
+    cfg_xyzX:CFG.xyzX,cfg_xyzY:CFG.xyzY,
+    cfg_autoVyvodStale:CFG.autoVyvodStale,cfg_autoVyvodSuperStale:CFG.autoVyvodSuperStale,
+    cfg_optMinStock:CFG.optMinStock,
+    cfg_staleZone1:CFG.staleZone1,cfg_staleZone2:CFG.staleZone2,
+    cfg_staleZone3:CFG.staleZone3,cfg_staleZone4:CFG.staleZone4,
+    cfg_ageZone1:CFG.ageZone1,cfg_ageZone2:CFG.ageZone2,
+    cfg_ageZone3:CFG.ageZone3,cfg_ageZone4:CFG.ageZone4,
+  };
+  for(const[id,val]of Object.entries(fields)){
+    const el=document.getElementById(id);if(el)el.value=val;
+  }
+}
+loadSettings();
 let dashCollapsed=false;
 
 // ==================== API KEY ====================
@@ -504,14 +593,25 @@ function mergeData(sd,od){
     // ИЛИ первые продажи только в последние 2 месяца
     const stockVals=Object.values(o.byDate||{});
     const firstStockIdx=stockVals.findIndex(v=>v>0);
-    const isNewByStock=firstStockIdx>=0&&firstStockIdx>=(stockVals.length-3);
+    const isNewByStock=firstStockIdx>=0&&firstStockIdx>=(stockVals.length-CFG.newItemMonths);
     const firstSaleIdx=mQty.findIndex(v=>v>0);
     const isNewBySale=firstSaleIdx>=0&&firstSaleIdx>=(mQty.length-2)&&tQty<(aqm*3);
     const isNewItem=(isNewByStock||isNewBySale)&&!tags.includes('ТО')&&!tags.includes('ТНО');
     if(isNewItem)tags.push('Новинка');
+    // Возраст остатка: сколько месяцев назад остаток был на уровне текущего или выше
+    // Т.е. минимальный срок нахождения текущих единиц на складе
+    const stockValsArr=Object.values(o.byDate||{});
+    let stockAge=0; // месяцев
+    if(cs>0&&stockValsArr.length>0){
+      // Идём с конца назад, ищем первый месяц где остаток был >= текущего
+      // Это означает что товар лежит минимум столько месяцев
+      for(let si=stockValsArr.length-1;si>=0;si--){
+        if(stockValsArr[si]>=cs){stockAge=stockValsArr.length-1-si;break;}
+      }
+    }
     items.push({id:id++,name,totalRev:tRev,totalQty:tQty,avgQtyPerMonth:aqm,avgRevPerMonth:arm,
       monthlyQty:mQty,monthlyRev:mRev,months,currentStock:cs,staleMonths:sm,staleDays:sm*30,
-      cv,tags,isNewItem,catABCD_money:'',catABCD_units:'',catXYZ:'',catCombo:''});
+      cv,tags,isNewItem,stockAge,_stockByDate:o.byDate||{},catABCD_money:'',catABCD_units:'',catXYZ:'',catCombo:''});
   }
   calcABCD(items,'totalRev','catABCD_money');
   calcABCD(items,'totalQty','catABCD_units');
@@ -529,10 +629,11 @@ function calcABCD(items,field,cf){
   const total=sorted.reduce((s,it)=>s+it[field],0);
   if(!total){items.forEach(it=>it[cf]='D');return;}
   let cum=0;const ic={};
-  for(const it of sorted){cum+=it[field]/total;ic[it.id]=cum<=.5?'A':cum<=.8?'B':cum<=.95?'C':'D';}
+  const tA=CFG.abcdA/100, tB=(CFG.abcdA+CFG.abcdB)/100, tC=(CFG.abcdA+CFG.abcdB+CFG.abcdC)/100;
+  for(const it of sorted){cum+=it[field]/total;ic[it.id]=cum<=tA?'A':cum<=tB?'B':cum<=tC?'C':'D';}
   items.forEach(it=>it[cf]=ic[it.id]||'D');
 }
-function calcXYZ(items){items.forEach(it=>it.catXYZ=it.cv<.35?'X':it.cv<.75?'Y':'Z');}
+function calcXYZ(items){const x=CFG.xyzX/100,y=CFG.xyzY/100;items.forEach(it=>it.catXYZ=it.cv<x?'X':it.cv<y?'Y':'Z');}
 function detectTags(name){
   const n=name.toUpperCase();const t=[];
   // ТНО проверяем первым (длиннее — чтобы не перехватил ТО)
@@ -749,7 +850,8 @@ function renderTable(){
     ${th('totalQty','Ед. продаж')}
     ${th('currentStock','Остаток')}
     ${th('avgQtyPerMonth','Ср/мес')}
-    ${th('staleMonths','Залежалость')}
+    ${th('staleMonths','Залежалость','Сколько месяцев продавать текущий остаток при текущем темпе')}
+    ${th('stockAge','Возраст ост.','Сколько месяцев текущий остаток уже лежит на складе')}
     <th>Динамика</th>
     ${hasAI?'<th>ИИ-рек.</th>':''}
     <th>Действия</th>
@@ -762,14 +864,15 @@ function renderTable(){
     html+=`<tr id="row_${it.id}" class="${sel?'selected':''}">
       <td style="width:36px;text-align:center"><input type="checkbox" ${sel?'checked':''} onchange="toggleSel(${it.id},this.checked)"></td>
       <td><div class="name-cell">${escHtml(it.name)}</div></td>
-      <td>${it.tags.map(chipH).join(' ')}</td>
+      <td>${it.tags.map(chipH).join(' ')}${it.isNewItem?' <span title="Новинка: появилась в последние '+CFG.newItemMonths+' мес. Не включается в авто-вывод. Залежалость может быть некорректной." style="cursor:help;color:var(--teal);font-size:10px">ℹ</span>':''}</td>
       <td>${getCatLabel(it)}</td>
       <td class="mono">${fmtM(it.totalRev)}</td>
       <td class="mono">${fmtN(it.totalQty)}</td>
       <td class="mono ${it.currentStock===0?'num-zero':''}">${fmtN(it.currentStock)}</td>
       <td class="mono">${it.avgQtyPerMonth.toFixed(1)}</td>
       <td><div class="stale-bar ${sc}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(it.staleMonths)}</span></div></td>
-      <td onclick="showChart(${it.id})" style="cursor:pointer" title="Нажмите для графика">${renderSpark(it.monthlyQty)}</td>
+      <td>${renderStockAge(it.stockAge,it.currentStock)}</td>
+      <td onclick="showChart(${it.id})" style="cursor:pointer" title="Нажмите для детальной таблицы">${renderSpark(it.monthlyQty)}</td>
       ${hasAI?`<td class="ai-rec-cell">${renderAiRec(rec)}</td>`:''}
       <td><div class="row-actions">
         <button class="btn btn-success btn-sm" onclick="sendOneToVyvod(${it.id})" title="На вывод">📤</button>
@@ -794,6 +897,7 @@ function renderTable(){
         <td class="mono" style="color:var(--text3)">—</td>
         <td style="color:var(--text3)">удалён</td>
         <td></td>
+        <td></td>
         ${hasAI2?'<td></td>':''}
         <td><button class="btn btn-ghost btn-sm" onclick="restoreDeleted(${it.id})" title="Вернуть в отчёт">↩</button></td>
       </tr>`;
@@ -807,25 +911,85 @@ function renderTable(){
 
 function showChart(id){
   const it=allItems.find(x=>x.id===id);if(!it)return;
-  const maxQ=Math.max(...it.monthlyQty,1);
-  const maxR=Math.max(...it.monthlyRev,1);
-  const bars=it.months.map((m,i)=>{
-    const q=it.monthlyQty[i]||0;
-    const h=Math.round((q/maxQ)*120)+2;
-    const r=it.monthlyRev[i]||0;
-    const shortM=m.replace(' г.','').replace('2025','25').replace('2026','26');
-    return`<div class="chart-bar-wrap">
-      <div class="chart-val">${q>0?fmtN(q):''}</div>
-      <div class="chart-bar" style="height:${h}px;background:${q===0?'var(--surface3)':'var(--accent)'}"></div>
-      <div class="chart-label">${shortM}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('chartTitle').textContent=it.name;
   const activeMoCount=it.monthlyQty.filter(q=>q>0).length;
-  const newBadge=it.isNewItem?' 🌱 НОВИНКА':'';
-  document.getElementById('chartSub').textContent=`Ср/мес (по акт. мес): ${it.avgQtyPerMonth.toFixed(1)} шт · Акт. мес: ${activeMoCount}/${it.months.length} · Остаток: ${fmtN(it.currentStock)} шт · Залежалость: ${fmtStale(it.staleMonths)} · ${it.catABCD_money}${it.catXYZ}${newBadge}`;
-  document.getElementById('chartBars').innerHTML=bars;
+  const newBadge=it.isNewItem?' 🌱 Новинка':'';
+  const rec=aiRecsMap[it.id];
+  const recBadge=rec?`  ИИ: ${rec.action} — ${rec.text}`:'';
+
+  // Заголовок и сводка
+  document.getElementById('chartTitle').textContent=it.name;
+  document.getElementById('chartSub').innerHTML=
+    `<span class="badge badge-${it.catABCD_money}" style="margin-right:4px">${it.catABCD_money}</span>`+
+    `<span class="badge badge-${it.catXYZ}" style="margin-right:8px">${it.catXYZ}</span>`+
+    (it.isNewItem?'<span class="chip chip-new" style="margin-right:8px">Новинка</span>':'')+
+    (rec?`<span class="rec-badge rec-${{'Вывод':'vyvod','Опт':'opt','Акция':'akc','Мотивация':'motiv','Ждать':'wait','Норма':'norm'}[rec.action]||'norm'}" style="margin-right:8px">${rec.action}</span>`+
+    `<span style="color:var(--text2);font-size:10px">${escHtml(rec.text)}</span>`:'')
+    +`<br><span style="color:var(--text3)">Ср/мес: </span><strong>${it.avgQtyPerMonth.toFixed(1)} шт</strong>`
+    +`<span style="color:var(--text3);margin-left:12px">Актив. мес: </span><strong>${activeMoCount}/${it.months.length}</strong>`
+    +`<span style="color:var(--text3);margin-left:12px">Тек. остаток: </span><strong>${fmtN(it.currentStock)} шт</strong>`
+    +`<span style="color:var(--text3);margin-left:12px">Залежалость: </span><strong class="${getStaleCls(it.staleMonths)} stale-value">${fmtStale(it.staleMonths)}</strong>`
+    +`<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(it.stockAge)} stale-value" title="Сколько месяцев текущий остаток уже лежит">${it.stockAge===0?'&lt;1мес':it.stockAge+'мес'}</strong>`;
+
+  // Таблица: месяц | продажи шт | выручка ₸ | остаток шт | залежалость
+  // Получаем остатки по датам из данных
+  const stockObj=it._stockByDate||{};
+  const months=it.months||[];
+
+  let totalQty=0,totalRev=0;
+  let rows='';
+  for(let i=0;i<months.length;i++){
+    const m=months[i];
+    const q=it.monthlyQty[i]||0;
+    const r=it.monthlyRev[i]||0;
+    totalQty+=q;totalRev+=r;
+    // Остаток на конец месяца — из stockByDate если есть
+    const stockKeys=Object.keys(stockObj);
+    const stockVals=Object.values(stockObj);
+    const stockVal=stockVals[i]!==undefined?stockVals[i]:null;
+    // Залежалость на этот момент (если есть остаток и есть продажи)
+    const avgSoFar=it.avgQtyPerMonth>0?it.avgQtyPerMonth:0;
+    const staleM=stockVal!==null&&avgSoFar>0?stockVal/avgSoFar:null;
+    const staleCls=staleM!==null?getStaleCls(staleM):'';
+    const shortM=m.replace(' г.','').replace('2025',"'25").replace('2026',"'26");
+    rows+=`<tr>
+      <td>${shortM}</td>
+      <td class="${q===0?'val-zero':'val-pos'}">${q===0?'—':fmtN(q)}</td>
+      <td class="${r===0?'val-zero':'val-pos'}">${r===0?'—':fmtM(r)}</td>
+      <td class="${stockVal===0||stockVal===null?'val-zero':'val-pos'}">${stockVal===null?'—':fmtN(stockVal)}</td>
+      <td class="stale-cell ${staleCls}">${staleM===null?'—':staleM>=999?'∞':staleM<1?Math.round(staleM*30)+'д':staleM.toFixed(1)+'мес'}</td>
+    </tr>`;
+  }
+  // Итоговая строка
+  const finalStale=it.avgQtyPerMonth>0?it.currentStock/it.avgQtyPerMonth:null;
+  const finalStaleCls=finalStale!==null?getStaleCls(finalStale):'';
+  rows+=`<tr class="summary-row">
+    <td>ИТОГО / ТЕКУЩИЙ</td>
+    <td>${fmtN(totalQty)} шт</td>
+    <td>${fmtM(totalRev)} ₸</td>
+    <td>${fmtN(it.currentStock)} шт</td>
+    <td class="stale-cell ${finalStaleCls}">${finalStale===null?'—':finalStale>=999?'∞':fmtStale(finalStale)}</td>
+  </tr>`;
+
+  document.getElementById('chartBars').innerHTML=`
+    <table class="detail-table">
+      <thead><tr>
+        <th>Месяц</th>
+        <th>Продажи шт</th>
+        <th>Выручка ₸</th>
+        <th>Остаток шт</th>
+        <th>Залежалость</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   document.getElementById('chartOverlay').style.display='flex';
+}
+
+function renderStockAge(age, stock){
+  if(!stock||stock===0)return'<span style="color:var(--text3);font-size:10px">—</span>';
+  if(age===0)return'<span style="color:var(--green);font-family:JetBrains Mono,monospace;font-size:11px">&lt;1мес</span>';
+  const cls=age<=CFG.ageZone1?'stale-ok':age<=CFG.ageZone2?'stale-warn':age<=CFG.ageZone3?'stale-danger':age<=CFG.ageZone4?'stale-critical':'stale-dead';
+  const label=age>=CFG.ageZone4?age+'мес ⚠':age+'мес';
+  return`<div class="stale-bar ${cls}"><div class="stale-dot"></div><span class="stale-value">${label}</span></div>`;
 }
 
 function renderSpark(vals){
@@ -844,7 +1008,7 @@ function renderAiRec(rec){
   return`<span class="rec-badge ${cls}">${rec.action}</span><br><span style="font-size:9px">${escHtml(rec.text||'')}</span>`;
 }
 
-function getStaleCls(m){if(m<=3)return'stale-ok';if(m<=6)return'stale-warn';if(m<=12)return'stale-danger';if(m<=24)return'stale-critical';return'stale-dead';}
+function getStaleCls(m){if(m<=CFG.staleZone1)return'stale-ok';if(m<=CFG.staleZone2)return'stale-warn';if(m<=CFG.staleZone3)return'stale-danger';if(m<=CFG.staleZone4)return'stale-critical';return'stale-dead';}
 function fmtStale(m){if(!m)return'—';if(m>=999)return'∞';if(m<1)return`${Math.round(m*30)}д`;return`${m.toFixed(1)}мес`;}
 
 // ==================== VYVOD ====================
@@ -965,6 +1129,7 @@ function switchTab(tab,btn){
   if(dw)dw.style.display=isMain?'block':'none';
   if(isMain)renderTable();
   else if(tab==='vyvod')renderVyvod();
+  else if(tab==='settings'){renderSettings();}
   else{const idx=parseInt(tab.replace('report_',''));renderCustomReport(idx);}
 }
 
@@ -1032,8 +1197,8 @@ function formulaAutoVyvod(){
     if(deletedIds.has(it.id)||vyvodIds.has(it.id))continue;
     const isD=it.catABCD_money==='D';
     const noSales=it.totalQty===0&&it.currentStock>0;
-    const superStale=it.staleMonths>24;
-    const dAndStale=isD&&it.staleMonths>12;
+    const superStale=it.staleMonths>CFG.autoVyvodSuperStale;
+    const dAndStale=isD&&it.staleMonths>CFG.autoVyvodStale;
     if((noSales||superStale||dAndStale)&&!it.isNewItem)candidates.push(it);
   }
   if(!candidates.length){alert('По формуле не найдено очевидных кандидатов');return;}
@@ -1141,6 +1306,7 @@ async function runAiAnalysis(){
           <div class="ai-item-rec"><span class="rec-badge rec-${cls}">${rec.action}</span> ${escHtml(rec.text)}</div></div>`;
       }).join('');
     }
+    renderFilterChips();
     if(i+BATCH<active.length)await sleep(300);
   }
   const total=Object.keys(aiRecsMap).length;
@@ -1156,7 +1322,7 @@ function buildPrompt(items){
   const rows=items.map(it=>{
     const stale=it.staleMonths>=999?'нет_продаж':it.staleMonths.toFixed(1)+'мес';
     const trend=calcTrend(it.monthlyQty);
-    const flags=[it.isNewItem?'НОВИНКА':'',it.currentStock>50?'МНОГО_ТОВАРА':'',it.currentStock>0&&it.currentStock<=20?'МАЛО_ТОВАРА':''].filter(Boolean).join(',');
+    const flags=[it.isNewItem?'НОВИНКА':'',it.currentStock>CFG.optMinStock?'МНОГО_ТОВАРА':'',it.currentStock>0&&it.currentStock<=20?'МАЛО_ТОВАРА':'',it.stockAge>CFG.ageZone3?'ДАВНО_ЛЕЖИТ_'+it.stockAge+'МЕС':''].filter(Boolean).join(',');
     return`${it.id}|${it.name.substring(0,28)}|${it.catABCD_money}${it.catXYZ}|вyr:${Math.round(it.totalRev/1000)}тыс|ост:${it.currentStock}шт|залеж:${stale}|тренд:${trend}|ср:${it.avgQtyPerMonth.toFixed(1)}шт${flags?'|'+flags:''}`;
   }).join('\n');
   return`Ты аналитик закупок обоев. Дай рекомендацию для каждой позиции.
@@ -1166,10 +1332,10 @@ function buildPrompt(items){
 ${rows}
 
 ПРАВИЛА выбора action (строго одно из шести):
-- "Вывод" — залежалость>12мес И (катД ИЛИ тренд падение) ИЛИ нет_продаж с остатком. Переводить в Решётку/ТНО.
-- "Опт" — залежалость>6мес И остаток>50шт. Оптовая рассылка со скидкой, не розница.
-- "Акция" — залежалость 6-12мес И остаток<=50шт. Скидка 20-30% в рознице.
-- "Мотивация" — залежалость 3-6мес. Добавить в мотивацию консультантов, без скидок.
+- "Вывод" — (залежалость>12мес И катД) ИЛИ нет_продаж с остатком ИЛИ (флаг ДАВНО_ЛЕЖИТ И залежалость>12мес). Переводить в Решётку/ТНО.
+- "Опт" — залежалость>6мес И флаг МНОГО_ТОВАРА. Или ДАВНО_ЛЕЖИТ И остаток большой. Оптовая рассылка со скидкой.
+- "Акция" — залежалость 6-12мес И флаг МАЛО_ТОВАРА. Скидка 20-30% в рознице.
+- "Мотивация" — залежалость 3-6мес. Или ДАВНО_ЛЕЖИТ но продажи есть. Добавить в мотивацию консультантов.
 - "Ждать" — флаг НОВИНКА ИЛИ катXYZ=Z(сезонный) ИЛИ тренд рост. Не трогать.
 - "Норма" — залежалость<3мес, катА или В, продажи стабильны. Всё хорошо.
 
@@ -1197,7 +1363,7 @@ function dtStr(){const d=new Date();return`${d.getDate().toString().padStart(2,'
 function exportXLSX(items,fname){
   if(!items.length){alert('Нет данных');return;}
   const wb=XLSX.utils.book_new();
-  const hdr=['Наименование','Метки','ABCD ₸','ABCD шт','XYZ','Комбо','Выручка ₸','Ед. продаж','Остаток','Ср/мес шт','Залежалость мес','Залежалость дни','ИИ-действие','ИИ-рекомендация'];
+  const hdr=['Наименование','Метки','ABCD ₸','ABCD шт','XYZ','Комбо','Выручка ₸','Ед. продаж','Остаток','Ср/мес шт','Залежалость мес','Залежалость дни','Возраст остатка мес','ИИ-действие','ИИ-рекомендация'];
   const rows=items.map(it=>{const rec=aiRecsMap[it.id];return[
     it.name,it.tags.join(', '),it.catABCD_money,it.catABCD_units,it.catXYZ,it.catCombo,
     Math.round(it.totalRev),Math.round(it.totalQty),it.currentStock,
@@ -1239,6 +1405,139 @@ function updateLoading(t){document.getElementById('loadingText').textContent=t;}
 function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
 
 // ==================== RESET ====================
+function renderSettings(){
+  const container=document.getElementById('tableContainer');
+  const dw=document.getElementById('dashboardWrap');
+  if(dw)dw.style.display='none';
+  const s=CFG;
+  container.innerHTML=`
+  <div style="padding:24px;max-width:760px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px">⚙ Настройки аналитики</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Все изменения сохраняются в браузере и применяются сразу после нажатия «Сохранить».</div>
+
+    <div style="display:grid;gap:20px">
+
+      <!-- НОВИНКА -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--teal)">🌱 Новинка</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Позиция считается новинкой если первый остаток появился в последние N месяцев периода. Новинки не включаются в авто-вывод.</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <label style="font-size:11px;color:var(--text2);min-width:200px">Считать новинкой за последние:</label>
+          <input id="cfg_newItemMonths" type="number" min="1" max="6" value="${s.newItemMonths}" style="width:70px" class="cfg-input">
+          <span style="font-size:11px;color:var(--text3)">месяцев</span>
+        </div>
+      </div>
+
+      <!-- ABCD -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#4f8ef7">📊 ABCD-анализ (пороги в %)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Сумма A+B+C+D должна быть 100%. По умолчанию: 50/30/15/5.</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          ${['A','B','C','D'].map((c,i)=>{
+            const id='cfg_abcd'+c;const val=[s.abcdA,s.abcdB,s.abcdC,s.abcdD][i];
+            const color=['#4f8ef7','#7c6af7','#f1c40f','#8892b0'][i];
+            return\`<div style="text-align:center">
+              <div style="font-size:11px;font-weight:700;color:\${color};margin-bottom:6px">Категория \${c}</div>
+              <input id="\${id}" type="number" min="1" max="90" value="\${val}" class="cfg-input" style="width:70px;text-align:center">
+              <div style="font-size:9px;color:var(--text3);margin-top:3px">%</div>
+            </div>\`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- XYZ -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#2ecc71">📈 XYZ-анализ (коэффициент вариации CV%)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">X = стабильные продажи (CV меньше порога X). Y = переменные. Z = непредсказуемые/сезонные. Для обоев рекомендуем X=35%, Y=75%.</div>
+        <div style="display:flex;gap:20px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:#2ecc71;font-weight:700">X</span>
+            <span style="font-size:11px;color:var(--text2)">CV &lt;</span>
+            <input id="cfg_xyzX" type="number" min="5" max="50" value="${s.xyzX}" class="cfg-input" style="width:60px">
+            <span style="font-size:11px;color:var(--text3)">%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:#e67e22;font-weight:700">Y</span>
+            <span style="font-size:11px;color:var(--text2)">CV &lt;</span>
+            <input id="cfg_xyzY" type="number" min="20" max="100" value="${s.xyzY}" class="cfg-input" style="width:60px">
+            <span style="font-size:11px;color:var(--text3)">% (выше = Z)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- АВТО-ВЫВОД -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--orange)">⚡ Авто-вывод (формульный)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Критерии для кнопки «Авто-вывод». Позиции новинок всегда исключаются.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="font-size:11px;color:var(--text2);min-width:280px">Категория D + залежалость больше:</label>
+            <input id="cfg_autoVyvodStale" type="number" min="3" max="36" value="${s.autoVyvodStale}" class="cfg-input" style="width:60px">
+            <span style="font-size:11px;color:var(--text3)">мес</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="font-size:11px;color:var(--text2);min-width:280px">Любая категория, залежалость больше:</label>
+            <input id="cfg_autoVyvodSuperStale" type="number" min="12" max="60" value="${s.autoVyvodSuperStale}" class="cfg-input" style="width:60px">
+            <span style="font-size:11px;color:var(--text3)">мес</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="font-size:11px;color:var(--text2);min-width:280px">Минимальный остаток для категории «Опт»:</label>
+            <input id="cfg_optMinStock" type="number" min="10" max="500" value="${s.optMinStock}" class="cfg-input" style="width:60px">
+            <span style="font-size:11px;color:var(--text3)">шт</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ЗОНЫ ЗАЛЕЖАЛОСТИ -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--red)">🔴 Зоны залежалости и возраста остатка (мес)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Границы цветовых зон: зелёный / жёлтый / оранжевый / красный / тёмно-красный</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--text2)">Залежалость (сколько продаваться)</div>
+            ${[['cfg_staleZone1','≤','#2ecc71'],['cfg_staleZone2','≤','#f1c40f'],['cfg_staleZone3','≤','#e67e22'],['cfg_staleZone4','≤','#e74c3c']].map((z,i)=>{
+              const val=[s.staleZone1,s.staleZone2,s.staleZone3,s.staleZone4][i];
+              return\`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <div style="width:10px;height:10px;border-radius:50%;background:\${z[2]};flex-shrink:0"></div>
+                <span style="font-size:10px;color:var(--text2);min-width:20px">\${z[1]}</span>
+                <input id="\${z[0]}" type="number" min="1" max="60" value="\${val}" class="cfg-input" style="width:55px">
+                <span style="font-size:10px;color:var(--text3)">мес</span>
+              </div>\`;
+            }).join('')}
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--text2)">Возраст остатка (сколько уже лежит)</div>
+            ${[['cfg_ageZone1','≤','#2ecc71'],['cfg_ageZone2','≤','#f1c40f'],['cfg_ageZone3','≤','#e67e22'],['cfg_ageZone4','≤','#e74c3c']].map((z,i)=>{
+              const val=[s.ageZone1,s.ageZone2,s.ageZone3,s.ageZone4][i];
+              return\`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <div style="width:10px;height:10px;border-radius:50%;background:\${z[2]};flex-shrink:0"></div>
+                <span style="font-size:10px;color:var(--text2);min-width:20px">\${z[1]}</span>
+                <input id="\${z[0]}" type="number" min="1" max="60" value="\${val}" class="cfg-input" style="width:55px">
+                <span style="font-size:10px;color:var(--text3)">мес</span>
+              </div>\`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="applySettingsFromForm()">✓ Сохранить и применить</button>
+      <button class="btn btn-ghost" onclick="resetSettings()">↺ Сбросить к умолчаниям</button>
+    </div>
+  </div>`;
+
+  // Стили для инпутов настроек
+  if(!document.getElementById('cfgStyle')){
+    const st=document.createElement('style');st.id='cfgStyle';
+    st.textContent='.cfg-input{background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:12px;font-family:JetBrains Mono,monospace;outline:none;}.cfg-input:focus{border-color:var(--accent);}';
+    document.head.appendChild(st);
+  }
+  // Заполнить форму текущими значениями (вызвать после рендера DOM)
+  setTimeout(fillSettingsForm, 10);
+}
+
 function resetApp(){
   allItems=[];displayItems=[];vyvodItems=[];customReports=[];
   hiddenIds.clear();selectedIds.clear();deletedIds.clear();aiRecsMap={};showDeleted=true;autoFilterIds=null;aiFilter=null;
@@ -1257,7 +1556,12 @@ function fmtM(v){if(!v)return'0';return Math.round(v).toLocaleString('ru');}
 function fmtN(v){if(!v&&v!==0)return'0';return Math.round(v).toLocaleString('ru');}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function chipH(t){const m={ТО:'chip-to',ТНО:'chip-tno',Т:'chip-t','#':'chip-hash',БРАК:'chip-brak',Нарезка:'chip-nar',Каталог:'chip-kat',Акция:'chip-akc',СЗ:'chip-sz','*':'chip-hash',Новинка:'chip-new'};return`<span class="chip ${m[t]||''}">${escHtml(t)}</span>`;}
+function chipH(t){
+  const m={ТО:'chip-to',ТНО:'chip-tno',Т:'chip-t','#':'chip-hash',БРАК:'chip-brak',Нарезка:'chip-nar',Каталог:'chip-kat',Акция:'chip-akc',СЗ:'chip-sz','*':'chip-hash',Новинка:'chip-new'};
+  const tips={Новинка:'Новинка: товар появился на остатках в последние '+CFG.newItemMonths+' мес. Не включается в авто-вывод.'};
+  const tip=tips[t]?` title="${tips[t]}"`:''  ;
+  return`<span class="chip ${m[t]||''}"${tip}>${escHtml(t)}</span>`;
+}
 
 // restore api key on load
 if(apiKey&&document.getElementById('apiKeyUpfront'))document.getElementById('apiKeyUpfront').value=apiKey;
