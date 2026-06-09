@@ -398,6 +398,8 @@ let allItems = [],
   aiRecsMap = {},
   sortCol = null,
   sortDir = -1,
+  vyvodSortCol = "staleMonths",
+  vyvodSortDir = -1,
   modalCallback = null,
   apiKey = localStorage.getItem("ato_api_key") || "";
 const SETTINGS_KEY = "ato_settings_v1",
@@ -427,7 +429,7 @@ const SETTINGS_KEY = "ato_settings_v1",
     avAgeCd: 6,
     avTrendStale: 6,
     avExcludeAB: !0,
-    avExcludeNewItems: !0,
+    avExcludeNewItems: !1,
     avExcludeTagged: !1,
     avMinActiveMos: 0,
     avEnabled_avgQty: !1,
@@ -1448,8 +1450,9 @@ function renderVyvod() {
   if (!vyvodItems.length)
     return void (t.innerHTML =
       '<div class="vyvod-section"><div class="vyvod-header"><div class="vyvod-title">📤 Позиции на вывод</div></div><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Нет позиций. Выберите товары и нажмите «На вывод».</div></div></div>');
-  let e = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📤 Позиции на вывод</div>\n    <div class="vyvod-count">${vyvodItems.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportVyvod()">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    <th>Наименование</th><th>Метки</th><th>ABCD ₸</th><th>XYZ</th>\n    <th>Выручка ₸</th><th>Ед. продаж</th><th>Остаток</th><th>Ср/мес шт</th><th>Залежалость</th><th>Возраст ост.</th><th>Динамика</th><th>ИИ-рек.</th><th></th>\n  </tr></thead><tbody>`;
-  for (const t of vyvodItems) {
+  let e = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📤 Позиции на вывод</div>\n    <div class="vyvod-count">${vyvodItems.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportVyvod()">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    ${["name","tags","catABCD_money","catXYZ","totalRev","totalQty","currentStock","avgQtyPerMonth","staleMonths","stockAge","","",""].map((f,i)=>{const labels=["Наименование","Метки","ABCD ₸","XYZ","Выручка ₸","Ед. продаж","Остаток","Ср/мес шт","Залежалость","Возраст ост.","Динамика","ИИ-рек.",""];return f?`<th style="cursor:pointer" onclick="vyvodSort('${f}')">${labels[i]}${vyvodSortCol===f?(vyvodSortDir>0?" ↑":" ↓"):""}</th>`:`<th>${labels[i]}</th>`;}).join("")}\n  </tr></thead><tbody>`;
+  const _vsorted = [...vyvodItems].sort((a,b)=>{const av=a[vyvodSortCol],bv=b[vyvodSortCol];return typeof av==="number"?(av-bv)*vyvodSortDir:String(av||"").localeCompare(String(bv||""),"ru")*vyvodSortDir;});
+  for (const t of _vsorted) {
     const n = getStaleCls(t.staleMonths),
       a = aiRecsMap[t.id];
     e += `<tr>\n      <td><div class="name-cell">${escHtml(t.name)}</div></td>\n      <td>${t.tags.map(chipH).join(" ")}</td>\n      <td><span class="badge badge-${t.catABCD_money}">${t.catABCD_money}</span></td>\n      <td><span class="badge badge-${t.catXYZ}">${t.catXYZ}</span></td>\n      <td class="mono">${fmtM(t.totalRev)}</td><td class="mono">${fmtN(t.totalQty)}</td>\n      <td class="mono">${fmtN(t.currentStock)}</td>\n      <td class="mono">${t.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${n}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(t.staleMonths)}</span></div></td>\n      <td class="mono ${getStaleCls(t.stockAge)}">${t.stockAge === 0 ? "&lt;1мес" : t.stockAge+"мес"}</td>\n      <td onclick="showChart(${t.id})" style="cursor:pointer">${renderSpark(t.monthlyQty)}</td>\n      <td class="ai-rec-cell">${renderAiRec(a)}</td>\n      <td>${confirmedVyvodIds.has(t.id) ? '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;background:#0f3020;border:1px solid #1a5a35;color:#2ecc71;font-size:11px;font-weight:700">✓ Подтверждён</span>' : '<div style="display:flex;gap:4px"><button class="btn btn-success btn-sm" onclick="confirmVyvod(' + t.id + ')" title="Подтвердить вывод">✓</button><button class="btn btn-ghost btn-sm" onclick="returnFromVyvod(' + t.id + ')">↩ Вернуть</button></div>'}</td>\n    </tr>`;
@@ -1582,6 +1585,10 @@ function sendOneToVyvod(t) {
 }
 function confirmVyvod(t) {
   confirmedVyvodIds.add(t);
+  renderVyvod();
+}
+function vyvodSort(col) {
+  if (vyvodSortCol === col) { vyvodSortDir *= -1; } else { vyvodSortCol = col; vyvodSortDir = -1; }
   renderVyvod();
 }
 function returnFromVyvod(t) {
