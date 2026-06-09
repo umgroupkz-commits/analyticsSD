@@ -512,6 +512,7 @@ function applySettingsFromForm() {
           k2.hasAny &&
           k2.firstIdx >= 0 &&
           k2.totalMonths - 1 - k2.firstIdx < CFG.newItemMonths &&
+          (()=>{ const fsi = t.monthlyQty.findIndex(v=>v>0); return fsi<0||(t.monthlyQty.length-1-fsi)<CFG.newItemMonths; })() &&
           !t.tags.includes("ТО") &&
           !t.tags.includes("ТНО")),
           (t.tags = t.tags.filter((t) => "Новинка" !== t)),
@@ -814,8 +815,13 @@ function mergeData(t, e, n) {
       m = u > 0 ? v / u : v > 0 ? 999 : 0,
       h = calcCV(g),
       y = detectTags(l),
-      k = n ? n.get(l) : null,
-      F = k && k.hasAny && k.firstIdx >= 0 && k.totalMonths - 1 - k.firstIdx < CFG.newItemMonths && !y.includes("ТО") && !y.includes("ТНО");
+      k = n ? n.get(l) : null;
+    const firstSaleIdx = g.findIndex(v => v > 0);
+    const firstSaleAgo = firstSaleIdx >= 0 ? g.length - 1 - firstSaleIdx : 999;
+    const F = k && k.hasAny && k.firstIdx >= 0
+      && k.totalMonths - 1 - k.firstIdx < CFG.newItemMonths
+      && firstSaleAgo < CFG.newItemMonths
+      && !y.includes("ТО") && !y.includes("ТНО");
     F && y.push("Новинка");
     const _sv = Object.values(c.byDate || {}).filter(v => v > 0);
     const isGhost = (c.currentStock || 0) > 0 && i === 0 && !k && _sv.length <= 1;
