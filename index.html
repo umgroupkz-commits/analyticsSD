@@ -7,11 +7,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Geologica:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2336;--surface3:#252b40;--border:#2d3555;--border2:#3d4870;--text:#e8ecf8;--text2:#8892b0;--text3:#4a5578;--accent:#4f8ef7;--accent2:#7c6af7;--green:#2ecc71;--yellow:#f1c40f;--orange:#e67e22;--red:#e74c3c;--red2:#c0392b;--teal:#1abc9c}
+:root{--bg:#f2f4f9;--surface:#ffffff;--surface2:#eaecf5;--surface3:#dde2f0;--border:#c8d0e4;--border2:#a8b4cc;--text:#1a1f35;--text2:#4a5578;--text3:#8892b0;--accent:#2563c8;--accent2:#5b3fb8;--green:#16865a;--yellow:#b07800;--orange:#b54f00;--red:#b52a2a;--red2:#8c1c1c;--teal:#0a7a6a}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 /* ATTRIBUTION */
-.attribution{background:#0a0d14;border-bottom:1px solid var(--border);padding:5px 24px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
+.attribution{background:#e8eaf5;border-bottom:1px solid var(--border);padding:5px 24px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
 .attribution a{color:var(--accent);text-decoration:none}.attribution a:hover{text-decoration:underline}
 .attr-sep{color:var(--border2)}
 /* HEADER */
@@ -21,7 +21,7 @@ body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);m
 .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 /* UPLOAD */
 .upload-zone{border:2px dashed var(--border2);border-radius:16px;padding:50px 40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);margin:40px auto;max-width:560px}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:#1a2240}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:#dde3f5}
 .upload-icon{font-size:44px;margin-bottom:14px}
 .upload-title{font-size:19px;font-weight:600;margin-bottom:6px}
 .upload-sub{color:var(--text2);font-size:13px}
@@ -50,23 +50,23 @@ body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);m
 .fchip.cat-b.active{border-color:#7c6af7;color:#7c6af7;background:#2d1f5e}
 .fchip.cat-c.active{border-color:#f1c40f;color:#f1c40f;background:#3d3510}
 .fchip.cat-d.active{border-color:#8892b0;color:#8892b0;background:#252a3d}
-.fchip.xyz-x.active{border-color:#2ecc71;color:#2ecc71;background:#0f3020}
-.fchip.xyz-y.active{border-color:#e67e22;color:#e67e22;background:#3d2810}
+.fchip.xyz-x.active{border-color:#16865a;color:#16865a;background:#d4f5e4}
+.fchip.xyz-y.active{border-color:#e67e22;color:#e67e22;background:#fff0d0}
 .fchip.xyz-z.active{border-color:#e74c3c;color:#e74c3c;background:#3d1010}
-.fchip.stale-ok.active{border-color:#2ecc71;color:#2ecc71;background:#0f3020}
+.fchip.stale-ok.active{border-color:#16865a;color:#16865a;background:#d4f5e4}
 .fchip.stale-w.active{border-color:#f1c40f;color:#f1c40f;background:#3d3510}
-.fchip.stale-r.active{border-color:#e67e22;color:#e67e22;background:#3d2810}
+.fchip.stale-r.active{border-color:#e67e22;color:#e67e22;background:#fff0d0}
 .fchip.stale-c.active{border-color:#e74c3c;color:#e74c3c;background:#3d1010}
 .fchip.stale-d.active{border-color:#c0392b;color:#c0392b;background:#3d0808}
-.fchip.tag-to.active{border-color:#ff8888;color:#ff8888;background:#3d1a1a}
+.fchip.tag-to.active{border-color:#ff8888;color:#ff8888;background:#fde8e8}
 .fchip.tag-hash.active{border-color:#ffa060;color:#ffa060;background:#3d2a1a}
 .fchip.tag-brak.active{border-color:#d488ff;color:#d488ff;background:#3a1a3d}
 .fchip.tag-nar.active{border-color:#60ddd0;color:#60ddd0;background:#1a3d3d}
 .fchip.tag-kat.active{border-color:#80e080;color:#80e080;background:#1a3d1a}
 .fchip.tag-akc.active{border-color:#ffe060;color:#ffe060;background:#3d3a1a}
 .fchip.tag-sz.active{border-color:#8888ff;color:#8888ff;background:#1a1a3d}
-.fchip.tag-tno.active{border-color:#ff6060;color:#ff6060;background:#4d1a1a}.fchip.tag-tr.active{border-color:#60c0ff;color:#60c0ff;background:#1a2a3d}.fchip.tag-star.active{border-color:#ffbb40;color:#ffbb40;background:#3d2a10}
-.fchip.tag-t.active{border-color:#ffaa60;color:#ffaa60;background:#3d2510}
+.fchip.tag-tno.active{border-color:#b52a2a;color:#b52a2a;background:#4d1a1a}.fchip.tag-tr.active{border-color:#60c0ff;color:#60c0ff;background:#1a2a3d}.fchip.tag-star.active{border-color:#ffbb40;color:#ffbb40;background:#3d2a10}
+.fchip.tag-t.active{border-color:#7a4800;color:#7a4800;background:#3d2510}
 .fchip.tag-new.active{border-color:#40e0a0;color:#40e0a0;background:#0f3d2a}
 .fchip-reset{color:var(--red)!important;border-color:var(--red)!important}
 .fchip-reset:hover{background:#3d1010!important}
@@ -74,11 +74,11 @@ body{font-family:'Geologica',sans-serif;background:var(--bg);color:var(--text);m
 .btn{padding:6px 13px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:600;font-family:'Geologica',sans-serif;transition:all .15s;white-space:nowrap}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#3a7de8}
 .btn-ghost{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--border2)}.btn-ghost.active{color:var(--text);border-color:var(--accent)}
-.btn-danger{background:#3d1a1a;color:var(--red);border:1px solid #5a2020}.btn-danger:hover{background:#4d2020}
+.btn-danger{background:#fde8e8;color:var(--red);border:1px solid #5a2020}.btn-danger:hover{background:#4d2020}
 .btn-success{background:#1a3d2a;color:var(--green);border:1px solid #1e5a35}.btn-success:hover{background:#1e4d30}
 .btn-ai{background:linear-gradient(135deg,#3d2f6e,#2d4080);color:#c8b8ff;border:1px solid #5a4a9e}.btn-ai:hover{background:linear-gradient(135deg,#4d3f7e,#3d5090)}
 .btn-teal{background:#1a3d38;color:var(--teal);border:1px solid #1a5a50}.btn-teal:hover{background:#1e4d44}
-.btn-orange{background:#3d2810;color:var(--orange);border:1px solid #5a3a10}.btn-orange:hover{background:#4d3010}
+.btn-orange{background:#fff0d0;color:var(--orange);border:1px solid #5a3a10}.btn-orange:hover{background:#4d3010}
 .btn-sm{padding:4px 9px;font-size:10px;border-radius:6px}
 .sep{width:1px;height:22px;background:var(--border);margin:0 2px}
 /* STATS */
@@ -106,7 +106,7 @@ th{background:var(--surface2);padding:9px 10px;text-align:left;font-size:9px;fon
 th:hover{color:var(--text2)}.th-sorted{color:var(--accent)!important}
 td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:var(--surface2)}
-tr.selected td{background:#1a2240}
+tr.selected td{background:#dde3f5}
 tr.hidden-row{display:none}
 .name-cell{font-size:11px;color:var(--text);max-width:220px;word-break:break-word;line-height:1.4}
 .mono{font-family:'JetBrains Mono',monospace}
@@ -114,7 +114,7 @@ tr.hidden-row{display:none}
 .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .badge-A{background:#1a3060;color:#4f8ef7}.badge-B{background:#2d1f5e;color:#7c6af7}
 .badge-C{background:#3d3510;color:#f1c40f}.badge-D{background:#252a3d;color:#8892b0}
-.badge-X{background:#0f3020;color:#2ecc71}.badge-Y{background:#3d2810;color:#e67e22}
+.badge-X{background:#d4f5e4;color:#16865a}.badge-Y{background:#fff0d0;color:#e67e22}
 .badge-Z{background:#3d1010;color:#e74c3c}
 /* STALE */
 .stale-bar{display:flex;align-items:center;gap:6px}
@@ -132,19 +132,19 @@ tr.hidden-row{display:none}
 .spark-bar{width:4px;border-radius:1px 1px 0 0;min-height:2px}
 /* CHIPS */
 .chip{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.04em}
-.chip-to{background:#3d1a1a;color:#ff8888}.chip-hash{background:#3d2a1a;color:#ffa060}
+.chip-to{background:#fde8e8;color:#ff8888}.chip-hash{background:#3d2a1a;color:#ffa060}
 .chip-brak{background:#3a1a3d;color:#d488ff}.chip-nar{background:#1a3d3d;color:#60ddd0}
 .chip-kat{background:#1a3d1a;color:#80e080}.chip-akc{background:#3d3a1a;color:#ffe060}
-.chip-sz{background:#1a1a3d;color:#8888ff}.chip-tno{background:#4d1a1a;color:#ff6060}.chip-t{background:#3d2510;color:#ffaa60}.chip-new{background:#0f3d2a;color:#40e0a0;border:1px solid #1a6040}.chip-tr{background:#1a2a3d;color:#60c0ff}.chip-star{background:#3d2a10;color:#ffbb40}
+.chip-sz{background:#1a1a3d;color:#8888ff}.chip-tno{background:#4d1a1a;color:#b52a2a}.chip-t{background:#3d2510;color:#7a4800}.chip-new{background:#0f3d2a;color:#40e0a0;border:1px solid #1a6040}.chip-tr{background:#1a2a3d;color:#60c0ff}.chip-star{background:#3d2a10;color:#ffbb40}
 /* AI REC */
 .ai-rec-cell{max-width:200px;font-size:10px;color:var(--text2);line-height:1.4}
 .rec-badge{display:inline-block;margin-bottom:2px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
-.rec-vyvod{background:#3d1a1a;color:#ff6060}
-.rec-opt{background:#2a1a3d;color:#c080ff}
+.rec-vyvod{background:#fde8e8;color:#b52a2a}
+.rec-opt{background:#ede8fd;color:#c080ff}
 .rec-motiv{background:#1a3d2a;color:#40d090}
-.rec-akc{background:#3d2a10;color:#ffaa40}
+.rec-akc{background:#3d2a10;color:#7a4e00}
 .rec-wait{background:#3d3510;color:#ffe060}
-.rec-norm{background:#0f3020;color:#40e080}
+.rec-norm{background:#d4f5e4;color:#40e080}
 /* AI PANEL */
 .ai-panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
 .ai-panel.open{transform:translateX(0)}
@@ -207,7 +207,7 @@ tr.hidden-row{display:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
-.num-pos{color:var(--text)}.num-zero{color:var(--text3)}
+.num-pos{color:var(--text)}.num-zero{color:var(--text3)}.num-warn{color:var(--orange);font-weight:600}
 </style>
 </head>
 <body>
@@ -243,6 +243,25 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
     <div class="upload-sub" style="margin-bottom:14px">XLS / XLSX с вкладками «Продажи» и «Остатки»</div>
     <button class="btn btn-primary" style="pointer-events:none">Выбрать файл</button>
   </div>
+  <div style="text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px">
+    <span style="font-size:12px;color:var(--text2)">Режим загрузки:</span>
+    <button id="modeSingle" class="btn btn-ghost btn-sm active" onclick="setUploadMode('single')">Один файл</button>
+    <button id="modeDual" class="btn btn-ghost btn-sm" onclick="setUploadMode('dual')">Розница + Опт</button>
+  </div>
+  <div id="dualZone" style="display:none;margin-top:12px;text-align:left;max-width:460px;margin-left:auto;margin-right:auto">
+    <div style="margin-bottom:10px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px">📦 Основной файл (Розница)</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Содержит: Продажи розницы + Остатки + Поступление</div>
+      <input type="file" id="fileInputRetail" accept=".xls,.xlsx" onchange="handleDualMain(this.files[0],'retail')" style="font-size:12px;color:var(--text2)">
+      <span id="dualRetailStatus" style="font-size:11px;color:var(--green);margin-left:8px;display:none">✓ Загружен</span>
+    </div>
+    <div id="dualSecondZone" style="opacity:0.4;pointer-events:none;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:12px;color:#c080ff;font-weight:600;margin-bottom:4px">🏭 Дополнительный файл (Опт)</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Содержит: только лист «Продажи» оптовых продаж</div>
+      <input type="file" id="fileInputWholesale" accept=".xls,.xlsx" onchange="handleDualSecond(this.files[0],'wholesale')" style="font-size:12px;color:var(--text2)">
+      <span id="dualWholesaleStatus" style="font-size:11px;color:var(--green);margin-left:8px;display:none">✓ Загружен</span>
+    </div>
+  </div>
   <input type="file" id="fileInput" accept=".xls,.xlsx" onchange="handleFile(this.files[0])">
   <div style="max-width:560px;margin:0 auto">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:14px">— Введите API ключ для ИИ-функций —</div>
@@ -272,6 +291,13 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
         <button class="btn btn-ghost btn-sm" id="modeXYZ" onclick="setMode('XYZ')">XYZ</button>
         <button class="btn btn-ghost btn-sm" id="modeCombo" onclick="setMode('Combo')">ABCD+XYZ</button>
         <div class="sep"></div>
+        <div id="channelSwitcher" style="display:none;align-items:center;gap:4px">
+          <span class="toolbar-label">Канал:</span>
+          <button class="btn btn-ghost btn-sm btn-channel active" data-ch="all" onclick="setChannel('all')">Все</button>
+          <button class="btn btn-ghost btn-sm btn-channel" data-ch="retail" onclick="setChannel('retail')">Розница</button>
+          <button class="btn btn-ghost btn-sm btn-channel" data-ch="wholesale" onclick="setChannel('wholesale')">Опт</button>
+          <div class="sep"></div>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="selectAll()">☐ Все</button>
         <button class="btn btn-ghost btn-sm" onclick="deselectAll()">✕ Снять</button>
         <button class="btn btn-success btn-sm" onclick="sendToVyvod()">📤 На вывод</button>
@@ -354,6 +380,9 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 </div>
 
 <script>
+
+
+
 !(function () {
   const t = window.location.hostname;
   (["localhost", "127.0.0.1", ""].some((e) => t === e) ||
@@ -384,11 +413,15 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 let allItems = [],
   displayItems = [],
   vyvodItems = [],
+  salesRetail = null,
+  salesWholesale = null,
+  currentChannel = 'all',
+  dualFileMode = false,
   customReports = [],
   confirmedVyvodIds = new Set(),
   currentTab = "main",
   currentMode = "ABCD_money",
-  activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set() },
+  activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set(), staleMin: null, staleMax: null, ageMin: null, ageMax: null, stockMin: null, stockMax: null },
   hiddenIds = new Set(),
   selectedIds = new Set(),
   deletedIds = new Set(),
@@ -400,6 +433,7 @@ let allItems = [],
   sortDir = -1,
   vyvodSortCol = "staleMonths",
   vyvodSortDir = -1,
+  lastClickedId = null,
   modalCallback = null,
   apiKey = localStorage.getItem("ato_api_key") || "";
 const SETTINGS_KEY = "ato_settings_v1",
@@ -473,6 +507,7 @@ function applySettingsFromForm() {
     (CFG.autoVyvodStale = t("cfg_autoVyvodStale")),
     (CFG.autoVyvodSuperStale = t("cfg_autoVyvodSuperStale")),
     (CFG.optMinStock = t("cfg_optMinStock")),
+    (CFG.lowStockThreshold = t("cfg_lowStockThreshold") || 5),
     (CFG.aiStaleVyvod = t("cfg_aiStaleVyvod")),
     (CFG.aiStaleOpt = t("cfg_aiStaleOpt")),
     (CFG.aiStaleAkcia = t("cfg_aiStaleAkcia")),
@@ -542,6 +577,7 @@ function fillSettingsForm() {
     cfg_autoVyvodStale: CFG.autoVyvodStale,
     cfg_autoVyvodSuperStale: CFG.autoVyvodSuperStale,
     cfg_optMinStock: CFG.optMinStock,
+    cfg_lowStockThreshold: CFG.lowStockThreshold,
     cfg_aiStaleVyvod: CFG.aiStaleVyvod,
     cfg_aiStaleOpt: CFG.aiStaleOpt,
     cfg_aiStaleAkcia: CFG.aiStaleAkcia,
@@ -642,11 +678,29 @@ function handleFile(t) {
                   const a = s ? parseArrivals(e.Sheets[s]) : new Map();
                   (updateLoading("Совмещаю..."),
                     setTimeout(() => {
-                      ((allItems = mergeData(t, n, a)),
+                      ((allItems = mergeData(t, n, a, salesRetail, salesWholesale)),
+                        (function() {
+                          if (dualFileMode) {
+                            // Основной файл загружен — его продажи = розница
+                            allItems.forEach(function(item) {
+                              item.monthlyQtyRetail = (item.monthlyQtyTotal || item.monthlyQty).slice();
+                              item.monthlyRevRetail = (item.monthlyRevTotal || item.monthlyRev).slice();
+                              item.totalQtyRetail = item.totalQtyTotal || item.totalQty;
+                              item.totalRevRetail = item.totalRevTotal || item.totalRev;
+                            });
+                            const st = document.getElementById('dualRetailStatus');
+                            if (st) st.style.display = 'inline';
+                            const sz = document.getElementById('dualSecondZone');
+                            if (sz) { sz.style.opacity = '1'; sz.style.pointerEvents = 'auto'; }
+                          }
+                        }()),
+                        updateChannelUI(),
                         hideLoading(),
-                        (document.getElementById("uploadView").style.display = "none"),
-                        (document.getElementById("mainView").style.display = "block"),
-                        renderAll());
+                        (dualFileMode
+                          ? null  // остаёмся на экране загрузки, ждём второй файл
+                          : ((document.getElementById("uploadView").style.display = "none"),
+                             (document.getElementById("mainView").style.display = "block"),
+                             renderAll())));
                     }, 50));
                 }, 50));
             }, 50));
@@ -693,7 +747,7 @@ function parseArrivals(t) {
   for (let t = n + 3; t < e.length; t++) {
     const n = e[t];
     if (!n) continue;
-    const a = n[4] ? String(n[4]).trim() : null;
+    const a = n[4] ? String(n[4]).trim().replace(/,\s*00-\d+.*$/, "").replace(/,\s*\d{2}-\d+.*$/, "").trim() : null;
     if (!a || "Итого" === a) continue;
     if ("рул." !== (n[7] ? String(n[7]).trim() : "")) continue;
     let l = -1,
@@ -772,7 +826,7 @@ function parseStock(t) {
   for (let t = n + 3; t < e.length; t++) {
     const n = e[t];
     if (!n || !n[0]) continue;
-    const a = String(n[0]).trim();
+    const a = String(n[0]).trim().replace(/,\s*00-\d+.*$/, "").replace(/,\s*\d{2}-\d+.*$/, "").trim();
     if ("Итого" === a) continue;
     const l = {};
     let c = null,
@@ -791,29 +845,74 @@ function fDate(t) {
     ? `${String(t.getDate()).padStart(2, "0")}.${String(t.getMonth() + 1).padStart(2, "0")}.${t.getFullYear()}`
     : "";
 }
-function mergeData(t, e, n) {
+function extractSalesArrays(salesData, name, months) {
+  const d = salesData ? salesData[name] : null;
+  if (!d) return { monthlyQty: months.map(()=>0), monthlyRev: months.map(()=>0) };
+  const mq = [], mr = [];
+  months.forEach(function(m) {
+    const e = d.monthData[m] || { qty: 0, rev: 0 };
+    mq.push(e.qty); mr.push(e.rev);
+  });
+  return { monthlyQty: mq, monthlyRev: mr };
+}
+function getChannelQty(item) {
+  if (currentChannel === 'retail' && item.monthlyQtyRetail) return item.monthlyQtyRetail;
+  if (currentChannel === 'wholesale' && item.monthlyQtyWholesale) return item.monthlyQtyWholesale;
+  return item.monthlyQtyTotal || item.monthlyQty || [];
+}
+function getChannelRev(item) {
+  if (currentChannel === 'retail' && item.monthlyRevRetail) return item.monthlyRevRetail;
+  if (currentChannel === 'wholesale' && item.monthlyRevWholesale) return item.monthlyRevWholesale;
+  return item.monthlyRevTotal || item.monthlyRev || [];
+}
+function getChannelTotalRev(item) {
+  if (currentChannel === 'retail') return item.totalRevRetail || 0;
+  if (currentChannel === 'wholesale') return item.totalRevWholesale || 0;
+  return item.totalRev;
+}
+function getChannelTotalQty(item) {
+  if (currentChannel === 'retail') return item.totalQtyRetail || 0;
+  if (currentChannel === 'wholesale') return item.totalQtyWholesale || 0;
+  return item.totalQty;
+}
+function applyChannel() {
+  allItems.forEach(function(item) {
+    const qty = getChannelQty(item);
+    const rev = getChannelRev(item);
+    item.monthlyQty = qty;
+    item.monthlyRev = rev;
+    item.totalQty = qty.reduce((a, b) => a + b, 0);
+    item.totalRev = rev.reduce((a, b) => a + b, 0);
+    item.avgQtyPerMonth = item.totalQty / (qty.filter(v => v > 0).length || 1);
+    item.avgRevPerMonth = item.totalRev / (rev.filter(v => v > 0).length || 1);
+    item.staleMonths = item.avgQtyPerMonth > 0 ? item.currentStock / item.avgQtyPerMonth : item.currentStock > 0 ? 999 : 0;
+  });
+  recomputeCategories();
+  renderAll();
+}
+function mergeData(t, e, n, retailSales, wholesaleSales) {
   n || (n = new Map());
   const a = new Set([...Object.keys(t), ...Object.keys(e)]),
     s = [];
   let o = 0;
   for (const l of a) {
-    const a = t[l] || { monthData: {}, months: [] },
-      c = e[l] || { byDate: {}, currentStock: 0 },
-      d = a.months || [];
+    const salesItem = t[l] || { monthData: {}, months: [] },
+      stockItem = e[l] || { byDate: {}, currentStock: 0 },
+      d = salesItem.months || [];
     d.length;
     let r = 0,
       i = 0;
     const g = [],
       p = [];
-    for (const t of d) {
-      const e = a.monthData[t] || { qty: 0, rev: 0 },
-        n = Math.max(0, e.qty),
-        s = Math.max(0, e.rev);
+    for (const mo of d) {
+      const mdata = salesItem.monthData[mo] || { qty: 0, rev: 0 },
+        n = Math.max(0, mdata.qty),
+        s = Math.max(0, mdata.rev);
       ((r += s), (i += n), g.push(n), p.push(s));
     }
     const u = i / (g.filter((t) => t > 0).length || 1),
       f = r / (p.filter((t) => t > 0).length || 1),
-      v = c.currentStock || 0,
+      v = stockItem.currentStock || 0,
       m = u > 0 ? v / u : v > 0 ? 999 : 0,
       h = calcCV(g),
       y = detectTags(l),
@@ -825,10 +924,10 @@ function mergeData(t, e, n) {
       && firstSaleAgo < CFG.newItemMonths
       && !y.includes("ТО") && !y.includes("ТНО");
     F && y.push("Новинка");
-    const _sv = Object.values(c.byDate || {}).filter(v => v > 0);
-    const isGhost = (c.currentStock || 0) > 0 && i === 0 && !k && _sv.length <= 1;
+    const _sv = Object.values(stockItem.byDate || {}).filter(v => v > 0);
+    const isGhost = (stockItem.currentStock || 0) > 0 && i === 0 && !k && _sv.length <= 1;
     if (isGhost) y.push("❓Нет данных");
-    const _ = Object.values(c.byDate || {});
+    const _ = Object.values(stockItem.byDate || {});
     let $ = 0;
     if (v > 0)
       if (k && k.hasAny) $ = (k.totalMonths || 5) - 1 - k.lastIdx;
@@ -847,6 +946,10 @@ function mergeData(t, e, n) {
       avgRevPerMonth: f,
       monthlyQty: g,
       monthlyRev: p,
+      monthlyQtyTotal: g.slice(),
+      monthlyRevTotal: p.slice(),
+      totalQtyTotal: i,
+      totalRevTotal: r,
       months: d,
       currentStock: v,
       staleMonths: m,
@@ -856,8 +959,9 @@ function mergeData(t, e, n) {
       isNewItem: F,
       isGhost: isGhost,
       stockAge: $,
-      _stockByDate: c.byDate || {},
+      _stockByDate: stockItem.byDate || {},
       _arrInfo: k || null,
+      lowStockMonths: Object.values(stockItem.byDate || {}).filter(function(v){return v >= 0 && v < CFG.lowStockThreshold;}).length,
       catABCD_money: "",
       catABCD_units: "",
       catABCD_avg: "",
@@ -873,6 +977,23 @@ function mergeData(t, e, n) {
     s.forEach((t) => (t.catCombo = t.catABCD_money + t.catXYZ)),
     s.sort((t, e) => e.totalRev - t.totalRev)
   );
+  // Данные каналов
+  if (retailSales || wholesaleSales) {
+    s.forEach(function(item) {
+      const nm = item.name, mos = item.months;
+      const r = extractSalesArrays(retailSales, nm, mos);
+      item.monthlyQtyRetail = r.monthlyQty;
+      item.monthlyRevRetail = r.monthlyRev;
+      item.totalQtyRetail = r.monthlyQty.reduce((a,b)=>a+b,0);
+      item.totalRevRetail = r.monthlyRev.reduce((a,b)=>a+b,0);
+      const w = extractSalesArrays(wholesaleSales, nm, mos);
+      item.monthlyQtyWholesale = w.monthlyQty;
+      item.monthlyRevWholesale = w.monthlyRev;
+      item.totalQtyWholesale = w.monthlyQty.reduce((a,b)=>a+b,0);
+      item.totalRevWholesale = w.monthlyRev.reduce((a,b)=>a+b,0);
+    });
+  }
+  return s;
 }
 function calcCV(t) {
   const e = t.filter((t) => t > 0);
@@ -911,23 +1032,21 @@ function calcXYZ(t) {
 }
 function detectTags(t) {
   const e = t.toUpperCase(),
-    n = [];
+    n = [],
+    wb = (s) => new RegExp("(?:^|[\\s\\/])" + s + "(?=$|[\\s\\/])").test(e);
   return (
-    e.includes("ТНО")
+    wb("ТНО")
       ? n.push("ТНО")
-      : (/[\s\/]ТО($|[\s\/])/.test(" " + e + " ") || e.endsWith(" ТО") || e.endsWith("/ТО")) && n.push("ТО"),
-    n.includes("ТО") ||
-      n.includes("ТНО") ||
-      !(/[\s\/]Т($|[\s])/.test(" " + t + " ") || t.endsWith(" Т") || t.endsWith("/Т")) ||
-      n.push("Т"),
+      : wb("ТО") && n.push("ТО"),
+    n.includes("ТО") || n.includes("ТНО") || !wb("Т") || n.push("Т"),
     e.includes("#") && n.push("#"),
-    e.includes("БРАК") && n.push("БРАК"),
-    e.includes("НАРЕЗКА") && n.push("Нарезка"),
-    e.includes("КАТАЛОГ") && n.push("Каталог"),
-    e.includes("АКЦИЯ") && n.push("Акция"),
-    (e.includes(" СЗ") || e.endsWith("СЗ")) && n.push("СЗ"),
+    wb("БРАК") && n.push("БРАК"),
+    wb("НАРЕЗКА") && n.push("Нарезка"),
+    wb("КАТАЛОГ") && n.push("Каталог"),
+    wb("АКЦИЯ") && n.push("Акция"),
+    wb("СЗ") && n.push("СЗ"),
     e.includes("*") && n.push("*"),
-    e.includes("ТР") && n.push("ТР"),
+    wb("ТР") && n.push("ТР"),
     n
   );
 }
@@ -949,7 +1068,14 @@ function itemMatchesFilters(t) {
     const e = getAgeZone(t.stockAge || 0);
     if (!activeFilters.age.has(e)) return !1;
   }
-  return !(activeFilters.tags.size > 0 && !t.tags.some((t) => activeFilters.tags.has(t)));
+  if (activeFilters.tags.size > 0 && !t.tags.some((t) => activeFilters.tags.has(t))) return !1;
+  if (activeFilters.staleMin !== null && t.staleMonths < activeFilters.staleMin) return !1;
+  if (activeFilters.staleMax !== null && t.staleMonths > activeFilters.staleMax) return !1;
+  if (activeFilters.ageMin !== null && (t.stockAge || 0) < activeFilters.ageMin) return !1;
+  if (activeFilters.ageMax !== null && (t.stockAge || 0) > activeFilters.ageMax) return !1;
+  if (activeFilters.stockMin !== null && t.currentStock < activeFilters.stockMin) return !1;
+  if (activeFilters.stockMax !== null && t.currentStock > activeFilters.stockMax) return !1;
+  return !0;
 }
 function getStaleZone(t) {
   return t <= 3 ? "ok" : t <= 6 ? "w" : t <= 12 ? "r" : t <= 24 ? "c" : "d";
@@ -967,6 +1093,7 @@ function getAgeZone(t) {
             ? "c"
             : "d";
 }
+function setNumFilter(f, v) { activeFilters[f] = v === '' ? null : parseFloat(v); applyFilters(); renderTable(); renderFilterChips(); }
 function toggleFilter(t, e, n) {
   const a = activeFilters[t];
   (a.has(e) ? a.delete(e) : a.add(e),
@@ -1035,7 +1162,7 @@ function renderFilterChips() {
   const t = document.getElementById("filterChips"),
     e = getActiveFilterCount() > 0 || hiddenIds.size > 0;
   let n =
-    '<div class="filter-chips" style="border-bottom:none;padding-bottom:4px"><span class="toolbar-label">Категория:</span>';
+    '<div class="filter-chips" style="border-bottom:none;padding-bottom:4px"><span class="toolbar-label">Фильтры <span style="font-size:10px;color:var(--accent);font-weight:400;cursor:pointer;text-decoration:underline" onclick="switchTab('help',this)" title="Открыть справку по фильтрам">(как работает?)</span>:</span>';
   for (const t of ["A", "B", "C", "D"]) {
     const e = activeFilters.cats.has(t);
     n += `<span class="fchip cat-${t.toLowerCase()} ${e ? "active" : ""}" data-ftype="cats" data-fval="${t}" onclick="toggleFilter('cats','${t}',this)">${t}</span>`;
@@ -1045,31 +1172,11 @@ function renderFilterChips() {
     const e = activeFilters.xyz.has(t);
     n += `<span class="fchip xyz-${t.toLowerCase()} ${e ? "active" : ""}" data-ftype="xyz" data-fval="${t}" onclick="toggleFilter('xyz','${t}',this)">${t}</span>`;
   }
-  n += '<span class="toolbar-label" style="margin-left:8px">Залежалость:</span>';
-  const a = [
-    { k: "ok", l: "≤" + CFG.staleZone1 + "мес", cls: "stale-ok" },
-    { k: "w", l: CFG.staleZone1 + "-" + CFG.staleZone2 + "мес", cls: "stale-w" },
-    { k: "r", l: CFG.staleZone2 + "-" + CFG.staleZone3 + "мес", cls: "stale-r" },
-    { k: "c", l: CFG.staleZone3 + "-" + CFG.staleZone4 + "мес", cls: "stale-c" },
-    { k: "d", l: ">" + CFG.staleZone4 + "мес", cls: "stale-d" },
-  ];
-  for (const t of a) {
-    const e = activeFilters.stale.has(t.k);
-    n += `<span class="fchip ${t.cls} ${e ? "active" : ""}" data-ftype="stale" data-fval="${t.k}" onclick="toggleFilter('stale','${t.k}',this)">${t.l}</span>`;
-  }
+  n += '<span class="toolbar-label" style="margin-left:8px">Запас:</span>';
+  n += `<span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.staleMin !== null ? activeFilters.staleMin : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('staleMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.staleMax !== null ? activeFilters.staleMax : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('staleMax',this.value)">`;
   n += '<span class="toolbar-label" style="margin-left:8px">Возраст ост.:</span>';
-  const s = [
-    { k: "ok", l: "&lt;" + CFG.ageZone1 + "мес", cls: "stale-ok" },
-    { k: "w", l: CFG.ageZone1 + "-" + CFG.ageZone2 + "мес", cls: "stale-w" },
-    { k: "r", l: CFG.ageZone2 + "-" + CFG.ageZone3 + "мес", cls: "stale-r" },
-    { k: "c", l: CFG.ageZone3 + "-" + CFG.ageZone4 + "мес", cls: "stale-c" },
-    { k: "d", l: "&gt;" + CFG.ageZone4 + "мес", cls: "stale-d" },
-  ];
-  for (const t of s) {
-    const e = activeFilters.age.has(t.k);
-    n += `<span class="fchip ${t.cls} ${e ? "active" : ""}" data-ftype="age" data-fval="${t.k}" onclick="toggleFilter('age','${t.k}',this)">${t.l}</span>`;
-  }
-  n += '</div><div class="filter-chips" style="border-bottom:none"><span class="toolbar-label">Метки:</span>';
+  n += `<span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.ageMin !== null ? activeFilters.ageMin : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('ageMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.ageMax !== null ? activeFilters.ageMax : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('ageMax',this.value)"> <span class="toolbar-label" style="margin-left:8px">Остаток</span> <span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999999" placeholder="шт" value="${activeFilters.stockMin !== null ? activeFilters.stockMin : ''}" style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('stockMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999999" placeholder="шт" value="${activeFilters.stockMax !== null ? activeFilters.stockMax : ''}" style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('stockMax',this.value)">`;
+n += '</div><div class="filter-chips" style="border-bottom:none"><span class="toolbar-label">Метки:</span>';
   const o = [
     { k: "Новинка", cls: "tag-new" },
     { k: "ТО", cls: "tag-to" },
@@ -1131,7 +1238,7 @@ function renderStats() {
         )
       : 0;
   document.getElementById("statsRow").innerHTML =
-    `\n    <div class="stat-card"><div class="stat-label">Товаров</div><div class="stat-value">${e.length.toLocaleString("ru")}</div><div class="stat-sub">из ${allItems.length}</div></div>\n    <div class="stat-card"><div class="stat-label">Выручка ₸</div><div class="stat-value">${fmtM(n)}</div><div class="stat-sub">за период</div></div>\n    <div class="stat-card"><div class="stat-label">Продано шт</div><div class="stat-value">${fmtN(a)}</div><div class="stat-sub">за период</div></div>\n    <div class="stat-card"><div class="stat-label">Остаток шт</div><div class="stat-value">${fmtN(s)}</div><div class="stat-sub">на складе</div></div>\n    <div class="stat-card" style="border-color:var(--orange)"><div class="stat-label">Под вниманием</div><div class="stat-value" style="color:var(--orange)">${o}</div><div class="stat-sub">&gt;${CFG.staleZone2} мес залежалость</div></div>\n    <div class="stat-card" style="border-color:var(--red)"><div class="stat-label">Критично</div><div class="stat-value" style="color:var(--red)">${l}</div><div class="stat-sub">&gt;${CFG.staleZone3} мес залежалость</div></div>\n    <div class="stat-card" style="border-color:#c080ff"><div class="stat-label">% неликвидов <input type="number" value="${window._illiqThreshold || CFG.ageZone3}" min="1" max="60" style="width:36px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;padding:1px 4px;margin-left:3px" onchange="window._illiqThreshold=+this.value;renderStats()" onclick="event.stopPropagation()" title="Порог возраста остатка (мес)">м</div><div class="stat-value" style="color:#c080ff">${illiqPct}%</div><div class="stat-sub">возраст &gt;порога</div></div>\n    <div class="stat-card" style="border-color:var(--teal)"><div class="stat-label">На выводе</div><div class="stat-value" style="color:var(--teal)">${vyvodItems.length}</div><div class="stat-sub">позиций</div></div>\n  `;
+    `\n    <div class="stat-card"><div class="stat-label">Товаров</div><div class="stat-value">${e.length.toLocaleString("ru")}</div><div class="stat-sub">из ${allItems.length}</div></div>\n    <div class="stat-card"><div class="stat-label">Выручка ₸</div><div class="stat-value">${fmtM(n)}</div><div class="stat-sub">за период</div></div>\n    <div class="stat-card"><div class="stat-label">Продано шт</div><div class="stat-value">${fmtN(a)}</div><div class="stat-sub">за период</div></div>\n    <div class="stat-card"><div class="stat-label">Остаток шт</div><div class="stat-value">${fmtN(s)}</div><div class="stat-sub">на складе</div></div>\n    <div class="stat-card" style="border-color:var(--orange)"><div class="stat-label">Под вниманием</div><div class="stat-value" style="color:var(--orange)">${o}</div><div class="stat-sub">&gt;${CFG.staleZone2} мес запас</div></div>\n    <div class="stat-card" style="border-color:var(--red)"><div class="stat-label">Критично</div><div class="stat-value" style="color:var(--red)">${l}</div><div class="stat-sub">&gt;${CFG.staleZone3} мес запас</div></div>\n    <div class="stat-card" style="border-color:#c080ff"><div class="stat-label">% неликвидов <input type="number" value="${window._illiqThreshold || CFG.ageZone3}" min="1" max="60" style="width:36px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;padding:1px 4px;margin-left:3px" onchange="window._illiqThreshold=+this.value;renderStats()" onclick="event.stopPropagation()" title="Порог возраста остатка (мес)">м</div><div class="stat-value" style="color:#c080ff">${illiqPct}%</div><div class="stat-sub">возраст &gt;порога</div></div>\n    <div class="stat-card" style="border-color:var(--teal)"><div class="stat-label">На выводе</div><div class="stat-value" style="color:var(--teal)">${vyvodItems.length}</div><div class="stat-sub">позиций</div></div>\n  `;
 }
 function renderLegend() {
   const t = [
@@ -1279,12 +1386,12 @@ function renderTable() {
   const e = Object.keys(aiRecsMap).length > 0,
     n = (t, e) =>
       `<th onclick="doSort('${t}')" class="${sortCol === t ? "th-sorted" : ""}">${e}${sortCol === t ? (sortDir > 0 ? " ↑" : " ↓") : ""}</th>`;
-  let a = `<table><thead><tr>\n    <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)"></th>\n    ${n("name", "Наименование")}\n    ${n("tags", "Метки")}\n    ${n("cat", "Кат.")}\n    ${n("totalRev", "Выручка ₸")}\n    ${n("totalQty", "Ед. продаж")}\n    ${n("currentStock", "Остаток")}\n    ${n("avgQtyPerMonth", "Ср/мес")}\n    ${n("staleMonths", "Залежалость")}\n    ${n("stockAge", "Возраст ост.")}\n    <th>Динамика</th>\n    ${e ? "<th>ИИ-рек.</th>" : ""}\n    <th>Действия</th>\n  </tr></thead><tbody>`;
+  let a = `<table><thead><tr>\n    <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)"></th>\n    ${n("name", "Наименование")}\n    ${n("tags", "Метки")}\n    ${n("cat", "Кат.")}\n    ${n("totalRev", "Выручка ₸")}\n    ${n("totalQty", "Ед. продаж")}\n    ${dualFileMode ? n("totalRevRetail", "Выручка роз.") : ""}\n    ${dualFileMode ? n("totalQtyRetail", "Шт роз.") : ""}\n    ${dualFileMode ? n("totalRevWholesale", "Выручка опт") : ""}\n    ${dualFileMode ? n("totalQtyWholesale", "Шт опт") : ""}\n    ${n("currentStock", "Остаток")}\n    ${n("avgQtyPerMonth", "Ср/мес")}\n    ${n("staleMonths", "Запас")}\n    ${n("stockAge", "Возраст ост.")}\n    ${n("lowStockMonths", "Мало на складе")}\n    <th>Динамика</th>\n    ${e ? "<th>ИИ-рек.</th>" : ""}\n    <th>Действия</th>\n  </tr></thead><tbody>`;
   for (const n of t) {
     const t = selectedIds.has(n.id),
       s = getStaleCls(n.staleMonths),
       o = aiRecsMap[n.id];
-    a += `<tr id="row_${n.id}" class="${t ? "selected" : ""}">\n      <td style="width:36px;text-align:center"><input type="checkbox" ${t ? "checked" : ""} onchange="toggleSel(${n.id},this.checked)"></td>\n      <td><div class="name-cell">${escHtml(n.name)}</div></td>\n      <td>${n.tags.map(chipH).join(" ")}${n.isNewItem ? ' <span title="Новинка: появилась в последние ' + CFG.newItemMonths + ' мес. Не включается в авто-вывод. Залежалость может быть некорректной." style="cursor:help;color:var(--teal);font-size:10px">ℹ</span>' : ""}</td>\n      <td>${getCatLabel(n)}</td>\n      <td class="mono">${fmtM(n.totalRev)}</td>\n      <td class="mono">${fmtN(n.totalQty)}</td>\n      <td class="mono ${0 === n.currentStock ? "num-zero" : ""}">${fmtN(n.currentStock)}</td>\n      <td class="mono">${n.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${s}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(n.staleMonths)}</span></div></td>\n      <td>${renderStockAge(n.stockAge, n.currentStock)}</td>\n      <td onclick="showChart(${n.id})" style="cursor:pointer" title="Нажмите для детальной таблицы">${renderSpark(n.monthlyQty)}</td>\n      ${e ? `<td class="ai-rec-cell">${renderAiRec(o)}</td>` : ""}\n      <td><div class="row-actions">\n        <button class="btn btn-success btn-sm" onclick="sendOneToVyvod(${n.id})" title="На вывод">📤</button>\n        <button class="btn btn-danger btn-sm" onclick="deleteOne(${n.id})" title="Удалить из отчёта">✕</button>\n      </div></td>\n    </tr>`;
+    a += `<tr id="row_${n.id}" class="${t ? "selected" : ""}" onclick="handleRowClick(${n.id},event)">\n      <td style="width:36px;text-align:center"><input type="checkbox" ${t ? "checked" : ""} onclick="event.stopPropagation()" onchange="toggleSel(${n.id},this.checked,event)"></td>\n      <td><div class="name-cell">${escHtml(n.name)}</div></td>\n      <td>${n.tags.map(chipH).join(" ")}${n.isNewItem ? ' <span title="Новинка: появилась в последние ' + CFG.newItemMonths + ' мес. Не включается в авто-вывод. Запас может быть некорректной." style="cursor:help;color:var(--teal);font-size:10px">ℹ</span>' : ""}</td>\n      <td>${getCatLabel(n)}</td>\n      <td class="mono">${fmtM(n.totalRev)}</td>\n      <td class="mono">${fmtN(n.totalQty)}</td>\n      ${dualFileMode ? `<td class="mono" style="color:var(--teal)">${fmtM(n.totalRevRetail||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--teal)">${fmtN(n.totalQtyRetail||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--accent2)">${fmtM(n.totalRevWholesale||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--accent2)">${fmtN(n.totalQtyWholesale||0)}</td>` : ""}\n      <td class="mono ${0 === n.currentStock ? "num-zero" : ""}">${fmtN(n.currentStock)}</td>\n      <td class="mono">${n.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${s}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(n.staleMonths)}</span></div></td>\n      <td>${renderStockAge(n.stockAge, n.currentStock)}</td>\n      <td class="mono ${n.lowStockMonths > 0 ? 'num-warn' : ''}" title="Мес. с остатком < ${CFG.lowStockThreshold} шт">${n.lowStockMonths > 0 ? n.lowStockMonths + "мес" : "—"}</td>\n      <td onclick="showChart(${n.id})" style="cursor:pointer" title="Нажмите для детальной таблицы">${renderSpark(n.monthlyQty)}</td>\n      ${e ? `<td class="ai-rec-cell">${renderAiRec(o)}</td>` : ""}\n      <td><div class="row-actions">\n        <button class="btn btn-success btn-sm" onclick="sendOneToVyvod(${n.id})" title="На вывод">📤</button>\n        <button class="btn btn-danger btn-sm" onclick="deleteOne(${n.id})" title="Удалить из отчёта">✕</button>\n      </div></td>\n    </tr>`;
   }
   if (showDeleted && deletedIds.size > 0) {
     const t = allItems.filter((t) => deletedIds.has(t.id));
@@ -1298,11 +1405,14 @@ function renderTable() {
     updateDeletedBtn(),
     (document.getElementById("tableContainer").innerHTML = a),
     updateDeletedBtn());
+  const _sc = document.getElementById("selCount");
+  if (_sc) _sc.textContent = selectedIds.size > 0 ? `Выделено: ${selectedIds.size}` : '';
 }
 function showChart(t) {
   const e = allItems.find((e) => e.id === t);
   if (!e) return;
-  const n = e.monthlyQty.filter((t) => t > 0).length,
+  try {
+  const n = (e.monthlyQtyTotal || e.monthlyQty).filter((t) => t > 0).length,
     a = (e.isNewItem, aiRecsMap[e.id]);
   (a && (a.action, a.text),
     (document.getElementById("chartTitle").textContent = e.name),
@@ -1317,7 +1427,7 @@ function showChart(t) {
       `<span style="color:var(--text3);margin-left:12px">Ср/мес ₸: </span><strong>${e.avgRevPerMonth >= 1000 ? Math.round(e.avgRevPerMonth/1000)+' тыс' : Math.round(e.avgRevPerMonth)+' ₸'}</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Актив. мес: </span><strong>${n}/${e.months.length}</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Тек. остаток: </span><strong>${fmtN(e.currentStock)} шт</strong>` +
-      `<span style="color:var(--text3);margin-left:12px">Залежалость: </span><strong class="${getStaleCls(e.staleMonths)} stale-value">${fmtStale(e.staleMonths)}</strong>` +
+      `<span style="color:var(--text3);margin-left:12px">Запас: </span><strong class="${getStaleCls(e.staleMonths)} stale-value">${fmtStale(e.staleMonths)}</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(e.stockAge)} stale-value" title="Сколько месяцев прошло с последнего прихода товара">${0 === e.stockAge ? "&lt;1мес" : e.stockAge + "мес"}</strong>` +
       (e._arrInfo
         ? `<span style="color:var(--text3);margin-left:12px">Последний приход: </span><strong>${e._arrInfo.hasAny ? "в периоде поступлений" : "до начала периода (&gt;" + e._arrInfo.totalMonths + "мес назад)"}</strong>`
@@ -1343,8 +1453,8 @@ function showChart(t) {
     g = "";
   for (let t = 0; t < o.length; t++) {
     const n = o[t],
-      a = e.monthlyQty[t] || 0,
-      l = e.monthlyRev[t] || 0;
+      a = (e.monthlyQtyTotal || e.monthlyQty)[t] || 0,
+      l = (e.monthlyRevTotal || e.monthlyRev)[t] || 0;
     ((r += a), (i += l));
     const d = Object.values(s),
       p = void 0 !== d[t] ? d[t] : null,
@@ -1393,6 +1503,18 @@ function showChart(t) {
       '">' +
       (null === f ? "—" : f >= 999 ? "∞" : f < 1 ? Math.round(30 * f) + "д" : f.toFixed(1) + "мес") +
       "</td></tr>";
+    if (_hasDual) {
+      const _rQty = _mqR[t] || 0, _rRev = _mrR[t] || 0;
+      const _wQty = _mqW[t] || 0, _wRev = _mrW[t] || 0;
+      g += '<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:var(--teal)">↳ Розница</td>'
+        + '<td class="' + (0===_rQty?'val-zero':'val-pos') + '">' + (0===_rQty?'—':fmtN(_rQty)) + '</td>'
+        + '<td class="' + (0===_rRev?'val-zero':'val-pos') + '">' + (0===_rRev?'—':fmtM(_rRev)) + '</td>'
+        + '<td></td><td></td><td></td></tr>';
+      g += '<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:#c080ff">↳ Опт</td>'
+        + '<td class="' + (0===_wQty?'val-zero':'val-pos') + '">' + (0===_wQty?'—':fmtN(_wQty)) + '</td>'
+        + '<td class="' + (0===_wRev?'val-zero':'val-pos') + '">' + (0===_wRev?'—':fmtM(_wRev)) + '</td>'
+        + '<td></td><td></td><td></td></tr>';
+    }
   }
   const p = e.avgQtyPerMonth > 0 ? e.currentStock / e.avgQtyPerMonth : null,
     u = null !== p ? getStaleCls(p) : "";
@@ -1411,8 +1533,9 @@ function showChart(t) {
     (null === p ? "—" : p >= 999 ? "∞" : fmtStale(p)) +
     "</td></tr>"),
     (document.getElementById("chartBars").innerHTML =
-      `\n    <table class="detail-table">\n      <thead><tr>\n        <th>Месяц</th>\n        <th>Продажи шт</th>\n        <th>Выручка ₸</th>\n        <th>Приход шт</th>\n        <th>Остаток шт</th>\n        <th>Залежалость</th>\n      </tr></thead>\n      <tbody>${g}</tbody>\n    </table>`),
+      `\n    <table class="detail-table">\n      <thead><tr>\n        <th>Месяц</th>\n        <th>Продажи шт</th>\n        <th>Выручка ₸</th>\n        <th>Приход шт</th>\n        <th>Остаток шт</th>\n        <th>Запас</th>\n      </tr></thead>\n      <tbody>${g}</tbody>\n    </table>`),
     (document.getElementById("chartOverlay").style.display = "flex"));
+  } catch(err) { console.error("showChart error:", err); alert("Ошибка: " + err.message); }
 }
 function renderStockAge(t, e) {
   return e && 0 !== e
@@ -1450,12 +1573,12 @@ function renderVyvod() {
   if (!vyvodItems.length)
     return void (t.innerHTML =
       '<div class="vyvod-section"><div class="vyvod-header"><div class="vyvod-title">📤 Позиции на вывод</div></div><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Нет позиций. Выберите товары и нажмите «На вывод».</div></div></div>');
-  let e = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📤 Позиции на вывод</div>\n    <div class="vyvod-count">${vyvodItems.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportVyvod()">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    ${["name","tags","catABCD_money","catXYZ","totalRev","totalQty","currentStock","avgQtyPerMonth","staleMonths","stockAge","","",""].map((f,i)=>{const labels=["Наименование","Метки","ABCD ₸","XYZ","Выручка ₸","Ед. продаж","Остаток","Ср/мес шт","Залежалость","Возраст ост.","Динамика","ИИ-рек.",""];return f?`<th style="cursor:pointer" onclick="vyvodSort('${f}')">${labels[i]}${vyvodSortCol===f?(vyvodSortDir>0?" ↑":" ↓"):""}</th>`:`<th>${labels[i]}</th>`;}).join("")}\n  </tr></thead><tbody>`;
+  let e = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📤 Позиции на вывод</div>\n    <div class="vyvod-count">${vyvodItems.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportVyvod()">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    ${["name","tags","catABCD_money","catXYZ","totalRev","totalQty","currentStock","avgQtyPerMonth","staleMonths","stockAge","","",""].map((f,i)=>{const labels=["Наименование","Метки","ABCD ₸","XYZ","Выручка ₸","Ед. продаж","Остаток","Ср/мес шт","Запас","Возраст ост.","Динамика","ИИ-рек.",""];return f?`<th style="cursor:pointer" onclick="vyvodSort('${f}')">${labels[i]}${vyvodSortCol===f?(vyvodSortDir>0?" ↑":" ↓"):""}</th>`:`<th>${labels[i]}</th>`;}).join("")}\n  </tr></thead><tbody>`;
   const _vsorted = [...vyvodItems].sort((a,b)=>{const av=a[vyvodSortCol],bv=b[vyvodSortCol];return typeof av==="number"?(av-bv)*vyvodSortDir:String(av||"").localeCompare(String(bv||""),"ru")*vyvodSortDir;});
   for (const t of _vsorted) {
     const n = getStaleCls(t.staleMonths),
       a = aiRecsMap[t.id];
-    e += `<tr>\n      <td><div class="name-cell">${escHtml(t.name)}</div></td>\n      <td>${t.tags.map(chipH).join(" ")}</td>\n      <td><span class="badge badge-${t.catABCD_money}">${t.catABCD_money}</span></td>\n      <td><span class="badge badge-${t.catXYZ}">${t.catXYZ}</span></td>\n      <td class="mono">${fmtM(t.totalRev)}</td><td class="mono">${fmtN(t.totalQty)}</td>\n      <td class="mono">${fmtN(t.currentStock)}</td>\n      <td class="mono">${t.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${n}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(t.staleMonths)}</span></div></td>\n      <td class="mono ${getStaleCls(t.stockAge)}">${t.stockAge === 0 ? "&lt;1мес" : t.stockAge+"мес"}</td>\n      <td onclick="showChart(${t.id})" style="cursor:pointer">${renderSpark(t.monthlyQty)}</td>\n      <td class="ai-rec-cell">${renderAiRec(a)}</td>\n      <td>${confirmedVyvodIds.has(t.id) ? '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;background:#0f3020;border:1px solid #1a5a35;color:#2ecc71;font-size:11px;font-weight:700">✓ Подтверждён</span>' : '<div style="display:flex;gap:4px"><button class="btn btn-success btn-sm" onclick="confirmVyvod(' + t.id + ')" title="Подтвердить вывод">✓</button><button class="btn btn-ghost btn-sm" onclick="returnFromVyvod(' + t.id + ')">↩ Вернуть</button></div>'}</td>\n    </tr>`;
+    e += `<tr>\n      <td><div class="name-cell">${escHtml(t.name)}</div></td>\n      <td>${t.tags.map(chipH).join(" ")}</td>\n      <td><span class="badge badge-${t.catABCD_money}">${t.catABCD_money}</span></td>\n      <td><span class="badge badge-${t.catXYZ}">${t.catXYZ}</span></td>\n      <td class="mono">${fmtM(t.totalRev)}</td><td class="mono">${fmtN(t.totalQty)}</td>\n      <td class="mono">${fmtN(t.currentStock)}</td>\n      <td class="mono">${t.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${n}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(t.staleMonths)}</span></div></td>\n      <td class="mono ${getStaleCls(t.stockAge)}">${t.stockAge === 0 ? "&lt;1мес" : t.stockAge+"мес"}</td>\n      <td onclick="showChart(${t.id})" style="cursor:pointer">${renderSpark(t.monthlyQty)}</td>\n      <td class="ai-rec-cell">${renderAiRec(a)}</td>\n      <td>${confirmedVyvodIds.has(t.id) ? '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;background:#0f3020;border:1px solid #1a5a35;color:#2ecc71;font-size:11px;font-weight:700">✓ Подтверждён</span><button class="btn btn-ghost btn-sm" style="margin-left:4px;font-size:10px" onclick="unconfirmVyvod('+t.id+')" title="Отменить">↩</button>' : '<div style="display:flex;gap:4px"><button class="btn btn-success btn-sm" onclick="confirmVyvod(' + t.id + ')" title="Подтвердить вывод">✓</button><button class="btn btn-ghost btn-sm" onclick="returnFromVyvod(' + t.id + ')">↩ Вернуть</button></div>'}</td>\n    </tr>`;
   }
   ((e += "</tbody></table></div></div>"), (t.innerHTML = e));
 }
@@ -1463,15 +1586,38 @@ function renderCustomReport(t) {
   const e = customReports[t];
   if (!e) return;
   const n = document.getElementById("tableContainer");
-  let a = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📋 ${escHtml(e.name)}</div>\n    <div class="vyvod-count">${e.items.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportCustom(${t})">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    <th>Наименование</th><th>Метки</th><th>ABCD ₸</th><th>XYZ</th>\n    <th>Выручка ₸</th><th>Ед. продаж</th><th>Остаток</th><th>Залежалость</th><th>Динамика</th>\n  </tr></thead><tbody>`;
+  let a = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📋 ${escHtml(e.name)}</div>\n    <div class="vyvod-count">${e.items.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportCustom(${t})">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    <th>Наименование</th><th>Метки</th><th>ABCD ₸</th><th>XYZ</th>\n    <th>Выручка ₸</th><th>Ед. продаж</th><th>Остаток</th><th>Запас</th><th>Динамика</th>\n  </tr></thead><tbody>`;
   for (const t of e.items) {
     const e = getStaleCls(t.staleMonths);
     a += `<tr>\n      <td><div class="name-cell">${escHtml(t.name)}</div></td>\n      <td>${t.tags.map(chipH).join(" ")}</td>\n      <td><span class="badge badge-${t.catABCD_money}">${t.catABCD_money}</span></td>\n      <td><span class="badge badge-${t.catXYZ}">${t.catXYZ}</span></td>\n      <td class="mono">${fmtM(t.totalRev)}</td><td class="mono">${fmtN(t.totalQty)}</td>\n      <td class="mono">${fmtN(t.currentStock)}</td>\n      <td><div class="stale-bar ${e}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(t.staleMonths)}</span></div></td>\n      <td onclick="showChart(${t.id})" style="cursor:pointer">${renderSpark(t.monthlyQty)}</td>\n    </tr>`;
   }
   ((a += "</tbody></table></div></div>"), (n.innerHTML = a));
 }
-function toggleSel(t, e) {
-  e ? selectedIds.add(t) : selectedIds.delete(t);
+function handleRowClick(id, evt) {
+  if (evt.target.type === "checkbox" || evt.target.closest(".row-actions") || evt.target.closest("[onclick]") && evt.target !== evt.currentTarget) return;
+  if (evt.shiftKey && lastClickedId !== null) {
+    const ids = displayItems.map(i => i.id);
+    const a = ids.indexOf(lastClickedId), b = ids.indexOf(id);
+    const [lo, hi] = a < b ? [a, b] : [b, a];
+    const adding = !selectedIds.has(id);
+    for (let k = lo; k <= hi; k++) adding ? selectedIds.add(ids[k]) : selectedIds.delete(ids[k]);
+  } else {
+    selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  }
+  lastClickedId = id;
+  renderTable();
+}
+function toggleSel(t, e, evt) {
+  if (evt && evt.shiftKey && lastClickedId !== null) {
+    const ids = displayItems.map(i => i.id);
+    const a = ids.indexOf(lastClickedId), b = ids.indexOf(t);
+    const [lo, hi] = a < b ? [a, b] : [b, a];
+    for (let k = lo; k <= hi; k++) e ? selectedIds.add(ids[k]) : selectedIds.delete(ids[k]);
+  } else {
+    e ? selectedIds.add(t) : selectedIds.delete(t);
+  }
+  if (e) lastClickedId = t;
+  renderTable();
 }
 function toggleAll(t) {
   (displayItems
@@ -1656,13 +1802,13 @@ function formulaAutoVyvod() {
   const t = new Set(vyvodItems.map((t) => t.id)),
     e = [];
   const rules = [];
-  if (CFG.avEnabled_dStale) rules.push("• Кат D + залежалость >" + CFG.autoVyvodStale + "мес");
-  if (CFG.avEnabled_superStale) rules.push("• Залежалость >" + CFG.autoVyvodSuperStale + "мес");
+  if (CFG.avEnabled_dStale) rules.push("• Кат D + запас >" + CFG.autoVyvodStale + "мес");
+  if (CFG.avEnabled_superStale) rules.push("• Запас >" + CFG.autoVyvodSuperStale + "мес");
   if (CFG.avEnabled_noSales) rules.push("• Нет продаж при остатке");
   if (CFG.avEnabled_age) rules.push("• Возраст остатка >" + CFG.avAge + "мес");
   if (CFG.avEnabled_ageCd) rules.push("• Возраст >" + CFG.avAgeCd + "мес + кат C/D");
   if (CFG.avEnabled_dz) rules.push("• Кат D + XYZ=Z");
-  if (CFG.avEnabled_trend) rules.push("• Залежалость >" + CFG.avTrendStale + "мес + падение");
+  if (CFG.avEnabled_trend) rules.push("• Запас >" + CFG.avTrendStale + "мес + падение");
   if (CFG.avEnabled_avgQty) rules.push("• Ср/мес кол-во < " + CFG.avAvgQty + " шт");
   if (CFG.avEnabled_totalRev) rules.push("• Суммарная выручка < " + CFG.avTotalRev.toLocaleString("ru") + " ₸");
   if (CFG.avEnabled_avgRev) rules.push("• Ср/мес выручка < " + CFG.avAvgRev.toLocaleString("ru") + " ₸");
@@ -1748,12 +1894,20 @@ async function runAiAnalysis() {
   }
   let a = 0;
   document.getElementById("aiStatus").textContent = `Анализирую ${e.length} позиций батчами по 20...`;
-  const _ctx = {
+  const _aiItems = e.map(function(item) {
+      return Object.assign({}, item, {
+        totalRev: item.totalRevTotal || item.totalRev,
+        totalQty: item.totalQtyTotal || item.totalQty,
+        avgRevPerMonth: (item.totalRevTotal || item.totalRev) / (((item.monthlyRevTotal || item.monthlyRev) || []).filter(function(v){return v>0;}).length || 1),
+        monthlyQty: item.monthlyQtyTotal || item.monthlyQty,
+      });
+    });
+    const _ctx = {
     total: allItems.filter((i) => !deletedIds.has(i.id)).length,
-    avgRev: e.reduce((a, i) => a + i.avgRevPerMonth, 0) / (e.length || 1),
+    avgRev: _aiItems.reduce((a, i) => a + i.avgRevPerMonth, 0) / (_aiItems.length || 1),
     avgStale: e.reduce((a, i) => a + (i.staleMonths >= 999 ? 0 : i.staleMonths), 0) / (e.length || 1),
     stalePct: Math.round((e.filter((i) => i.staleMonths > 6).length / (e.length || 1)) * 100),
-    top3: [...e].sort((a, b) => b.totalRev - a.totalRev).slice(0, 3),
+    top3: [..._aiItems].sort((a, b) => b.totalRev - a.totalRev).slice(0, 3),
   };
   for (let n = 0; n < e.length; n += 20) {
     const s = e.slice(n, n + 20);
@@ -1769,7 +1923,7 @@ async function runAiAnalysis() {
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
           max_tokens: 4e3,
-          messages: [{ role: "user", content: buildPrompt(s, _ctx) }],
+          messages: [{ role: "user", content: buildPrompt(s.map(function(item){ return _aiItems.find(function(a){return a.id===item.id;})||item; }), _ctx) }],
         }),
       });
       if (!e.ok) {
@@ -1888,15 +2042,15 @@ function buildPrompt(t, ctx) {
     ctx.total +
     "\n- Средняя выручка/мес: " +
     Math.round(ctx.avgRev / 1e3) +
-    " тыс ₸\n- Средняя залежалость: " +
+    " тыс ₸\n- Средняя запас: " +
     ctx.avgStale.toFixed(1) +
     " мес\n- Доля неликвида >6мес: " +
     ctx.stalePct +
     "%\n- Топ-3 по выручке: " +
     top3str +
-    "\n\nКОЛОНКИ: ID|название|ABCD₸+XYZ(ABCD_ср/мес)|выручка_итого|ср/мес_выручка|остаток|залежалость|тренд|продажи_3мес|возраст_остатка|отклонение|флаги\n\nПОЗИЦИИ:\n" +
+    "\n\nКОЛОНКИ: ID|название|ABCD₸+XYZ(ABCD_ср/мес)|выручка_итого|ср/мес_выручка|остаток|запас|тренд|продажи_3мес|возраст_остатка|отклонение|флаги\n\nПОЗИЦИИ:\n" +
     lines +
-    "\n\nПОРОГИ ДЛЯ ОРИЕНТИРА (не жёсткие правила):\n- Вывод: залежалость > " + CFG.aiStaleVyvod + " мес\n- Опт: залежалость > " + CFG.aiStaleOpt + " мес + остаток > " + CFG.optMinStock + " шт\n- Акция: залежалость > " + CFG.aiStaleAkcia + " мес\n- Мотивация: залежалость > " + CFG.aiStaleMot + " мес\n\nАНАЛИЗИРУЙ СВОБОДНО. Пороги — ориентир, смотри шире:\n- Флаг МЕТКИ = особый статус (ТО, ТНО, #) — рекомендуй Норма или Ждать\n- Флаг ПРИЗРАК_НЕТ_ДАННЫХ = данные ненадёжны — рекомендуй Ждать\n- Флаг НОВИНКА = мало истории, осторожно с выводом\n- Ищи противоречия: высокая категория + залежалость растёт\n\nВ text (до 12 слов): цифры и факты. НЕ шаблонные фразы.\n\nОтветь ТОЛЬКО JSON без markdown: [{\"id\":1,\"action\":\"Норма\",\"text\":\"причина\"}]"
+    "\n\nПОРОГИ ДЛЯ ОРИЕНТИРА (не жёсткие правила):\n- Вывод: запас > " + CFG.aiStaleVyvod + " мес\n- Опт: запас > " + CFG.aiStaleOpt + " мес + остаток > " + CFG.optMinStock + " шт\n- Акция: запас > " + CFG.aiStaleAkcia + " мес\n- Мотивация: запас > " + CFG.aiStaleMot + " мес\n\nАНАЛИЗИРУЙ СВОБОДНО. Пороги — ориентир, смотри шире:\n- Флаг МЕТКИ = особый статус (ТО, ТНО, #) — рекомендуй Норма или Ждать\n- Флаг ПРИЗРАК_НЕТ_ДАННЫХ = данные ненадёжны — рекомендуй Ждать\n- Флаг НОВИНКА = мало истории, осторожно с выводом\n- Ищи противоречия: высокая категория + запас растёт\n\nВ text (до 12 слов): цифры и факты. НЕ шаблонные фразы.\n\nОтветь ТОЛЬКО JSON без markdown: [{\"id\":1,\"action\":\"Норма\",\"text\":\"причина\"}]"
   );
 }
 function calcTrend(t) {
@@ -1930,74 +2084,48 @@ function exportXLSX(t, e) {
       return [
         t.name,
         t.tags.join(", "),
-        t.catABCD_money,
-        t.catABCD_units,
-        t.catXYZ,
-        t.catCombo,
         Math.round(t.totalRev),
         Math.round(t.totalQty),
         t.currentStock,
         parseFloat(t.avgQtyPerMonth.toFixed(2)),
         t.staleMonths >= 999 ? "нет продаж" : parseFloat(t.staleMonths.toFixed(1)),
-        t.staleMonths >= 999 ? "нет продаж" : Math.round(t.staleDays),
-        t.currentStock > 0 ? t.stockAge || 0 : 0,
-        e ? e.action : "",
-        e ? e.text : "",
+        t.stockAge || 0,
+        aiRecsMap[t.id]?.action || "",
+        aiRecsMap[t.id]?.text || "",
+        ...(t.monthlyQty || [])
       ];
     }),
     s = XLSX.utils.aoa_to_sheet([
       [
         "Наименование",
         "Метки",
-        "ABCD ₸",
-        "ABCD шт",
-        "XYZ",
-        "Комбо",
         "Выручка ₸",
         "Ед. продаж",
         "Остаток",
         "Ср/мес шт",
-        "Залежалость мес",
-        "Залежалость дни",
+        "Запас мес",
         "Возраст остатка мес",
         "ИИ-действие",
         "ИИ-рекомендация",
+        ...t[0] ? t[0].months || [] : [],
       ],
       ...a,
     ]);
-  ((s["!cols"] = [
+  (s["!cols"] = [
     { wch: 45 },
     { wch: 20 },
-    { wch: 8 },
-    { wch: 8 },
-    { wch: 6 },
-    { wch: 8 },
     { wch: 16 },
     { wch: 12 },
     { wch: 10 },
     { wch: 10 },
-    { wch: 14 },
+    { wch: 12 },
     { wch: 14 },
     { wch: 12 },
-    { wch: 40 },
-  ]),
-    XLSX.utils.book_append_sheet(n, s, "Данные"));
-  const o = t.reduce((t, e) => t + e.totalRev, 0),
-    l = ["A", "B", "C", "D"].map((e) => {
-      const n = t.filter((t) => t.catABCD_money === e),
-        a = n.reduce((t, e) => t + e.totalRev, 0);
-      return [
-        e,
-        n.length,
-        Math.round(a),
-        o > 0 ? parseFloat(((a / o) * 100).toFixed(1)) : 0,
-        n.reduce((t, e) => t + e.currentStock, 0),
-      ];
-    }),
-    c = XLSX.utils.aoa_to_sheet([["Категория", "Позиций", "Выручка ₸", "% выручки", "Остаток шт"], ...l]);
-  ((c["!cols"] = [{ wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 14 }]),
-    XLSX.utils.book_append_sheet(n, c, "Сводка ABCD"),
-    XLSX.writeFile(n, e + ".xlsx"));
+    { wch: 24 },
+    ...(t[0] ? (t[0].months || []).map(() => ({ wch: 8 })) : []),
+  ]);
+  XLSX.utils.book_append_sheet(n, s, "Данные");
+  XLSX.writeFile(n, e + ".xlsx");
 }
 function showModal(t, e, n, a) {
   ((modalCallback = a),
@@ -2191,16 +2319,16 @@ function renderSettings() {
       "⚡",
       "Авто-вывод — настройка условий",
       "Включите нужные условия. Позиция попадает в авто-вывод если выполнено <b>хотя бы одно</b> включённое условие. Новинки всегда исключаются.",
-      '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Основные условия:</div>' +
-        r("cfg_avEnabled_dStale", "Категория D + залежалость больше", "cfg_autoVyvodStale", 3, 36, "мес") +
-        r("cfg_avEnabled_superStale", "Любая категория, залежалость больше", "cfg_autoVyvodSuperStale", 12, 60, "мес") +
+      '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;margin-bottom:10px">' + '<span style="font-size:12px;font-weight:600;color:var(--text2)">Логика условий:</span>' + '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px"><input type="radio" name="avLogic" id="cfg_avLogic_or" value="or" ' + (CFG.avLogic!=='and'?'checked':'') + '> ИЛИ — хотя бы одно</label>' + '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px"><input type="radio" name="avLogic" id="cfg_avLogic_and" value="and" ' + (CFG.avLogic==='and'?'checked':'') + '> И — все условия</label>' + '</div>' + '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Основные условия:</div>' +
+        r("cfg_avEnabled_dStale", "Категория D + запас больше", "cfg_autoVyvodStale", 3, 36, "мес") +
+        r("cfg_avEnabled_superStale", "Любая категория, запас больше", "cfg_autoVyvodSuperStale", 12, 60, "мес") +
         r("cfg_avEnabled_noSales", "Нет продаж при наличии остатка", "", "", "", "") +
         r("cfg_avEnabled_avgQty", "Ср/мес продажи меньше (шт)", "cfg_avAvgQty", 0, 9999, "шт") +
         '</div><div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Дополнительные условия (по возрасту и тренду):</div>' +
         r("cfg_avEnabled_age", "Возраст остатка больше (любая категория)", "cfg_avAge", 3, 36, "мес") +
         r("cfg_avEnabled_ageCd", "Возраст остатка больше + категория C или D", "cfg_avAgeCd", 3, 24, "мес") +
         r("cfg_avEnabled_dz", "Категория D + нестабильные продажи (XYZ = Z)", "", "", "", "") +
-        r("cfg_avEnabled_trend", "Залежалость больше + тренд «падение»", "cfg_avTrendStale", 3, 24, "мес") +
+        r("cfg_avEnabled_trend", "Запас больше + тренд «падение»", "cfg_avTrendStale", 3, 24, "мес") +
         r("cfg_avEnabled_totalRev", "Суммарная выручка за период меньше", "cfg_avTotalRev", 0, 99999999, "₸") +
         r("cfg_avEnabled_avgRev", "Средняя выручка в месяц (ср/мес) меньше", "cfg_avAvgRev", 0, 9999999, "₸") +
         '</div><div style="border-top:1px solid var(--border);padding-top:12px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Стопы (не включать):</div>' +
@@ -2217,12 +2345,13 @@ function renderSettings() {
       "Настройки ИИ-анализа",
       "Пороги залежалости для ИИ-рекомендаций по позициям.",
       '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Пороги залежалости для рекомендаций:</div>' +
-        n("Рек. «Вывод» — залежалость больше:", "cfg_aiStaleVyvod", 3, 60, "мес") +
-        n("Рек. «Опт» — залежалость больше:", "cfg_aiStaleOpt", 1, 36, "мес") +
-        n("Рек. «Акция» — залежалость больше:", "cfg_aiStaleAkcia", 1, 24, "мес") +
-        n("Рек. «Мотивация» — залежалость больше:", "cfg_aiStaleMot", 1, 12, "мес") +
+        n("Рек. «Вывод» — запас больше:", "cfg_aiStaleVyvod", 3, 60, "мес") +
+        n("Рек. «Опт» — запас больше:", "cfg_aiStaleOpt", 1, 36, "мес") +
+        n("Рек. «Акция» — запас больше:", "cfg_aiStaleAkcia", 1, 24, "мес") +
+        n("Рек. «Мотивация» — запас больше:", "cfg_aiStaleMot", 1, 12, "мес") +
         '<div style="border-top:1px solid var(--border);padding-top:12px">' +
-        n("Мин. остаток для рек. «Опт» (шт):", "cfg_optMinStock", 10, 500, "шт") +
+        n("Мин. остаток для рек. «Опт» (шт):", "cfg_optMinStock", 10, 500, "шт")
+        + n("Порог «мало на складе» (шт, 0=нулевые):", "cfg_lowStockThreshold", 0, 100, "шт") +
         "</div>",
     ),
     g = a(
@@ -2230,7 +2359,7 @@ function renderSettings() {
       "🔴",
       "Зоны залежалости и возраста остатка",
       "Границы цветовых зон: зелёный / жёлтый / оранжевый / красный / тёмно-красный.",
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div style="font-size:11px;font-weight:600;margin-bottom:10px;color:var(--text2)">Залежалость (сколько продаваться)</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div style="font-size:11px;font-weight:600;margin-bottom:10px;color:var(--text2)">Запас (сколько продаваться)</div>' +
         s("cfg_staleZone1", "#2ecc71", "≤", o.staleZone1) +
         s("cfg_staleZone2", "#f1c40f", "≤", o.staleZone2) +
         s("cfg_staleZone3", "#e67e22", "≤", o.staleZone3) +
@@ -2257,7 +2386,8 @@ function renderSettings() {
 function renderHelp() {
   const t = document.getElementById("tableContainer"),
     e = document.getElementById("dashboardWrap");
-  function n(t, e, n, a) {
+  e && (e.style.display = "none");
+  function s(t, e, n, a) {
     return (
       '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px"><div style="font-size:15px;font-weight:700;margin-bottom:12px;color:' +
       n +
@@ -2274,154 +2404,164 @@ function renderHelp() {
     return (
       '<div style="display:grid;grid-template-columns:220px 1fr;gap:12px;padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-size:11px;font-weight:600;color:var(--text);font-family:JetBrains Mono,monospace">' +
       t +
-      '</div><div style="font-size:11px;color:var(--text2);line-height:1.6">' +
+      '</div><div style="font-size:11px;color:var(--text2)">' +
       e +
       "</div></div>"
     );
   }
-  function s(t, e, n) {
-    return (
-      '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px">' +
-      t +
-      '</div><div style="font-family:JetBrains Mono,monospace;font-size:11px;background:var(--surface3);padding:6px 10px;border-radius:5px;margin-bottom:4px;color:#60aaff">' +
-      e +
-      '</div><div style="font-size:11px;color:var(--text2);line-height:1.6">' +
-      n +
-      "</div></div>"
-    );
+  var o =
+    '<div style="padding:20px;max-width:860px">' +
+    '<div style="font-size:22px;font-weight:700;margin-bottom:4px">📖 Справка по аналитике</div>' +
+    '<div style="font-size:12px;color:var(--text3);margin-bottom:20px">Актуально для текущей версии программы</div>' +
+
+    s("📁", "Загрузка файлов", "var(--accent)",
+      a("Один файл", "XLS/XLSX с тремя листами: «Продажи», «Остатки», «Поступление». Все данные берутся из него.") +
+      a("Два файла (Розница + Опт)", "Сначала загрузите основной файл (розница) — он содержит все три листа. После появится блок для второго файла (только лист «Продажи» оптовых). После загрузки обоих в тулбаре появится переключатель Все / Розница / Опт.") +
+      a("Переключатель канала", "Меняет данные во всей аналитике: ABCD, запас, авто-вывод. ИИ-анализ всегда работает по суммарным данным.")
+    ) +
+
+    s("📊", "Режимы анализа", "var(--accent)",
+      a("ABCD ₸", "Ранжирование по суммарной выручке за период. A — топ 70%, B — следующие 20%, C — 7%, D — 3%.") +
+      a("ABCD шт", "Ранжирование по количеству проданных единиц.") +
+      a("ABCD ср/мес ⌀", "Ранжирование по средней выручке в месяц (только активные месяцы). Точнее отражает реальный спрос чем суммарная выручка.") +
+      a("XYZ", "Стабильность продаж по коэффициенту вариации. X — стабильные, Y — умеренные, Z — нестабильные.") +
+      a("ABCD+XYZ", "Комбинированный показатель: AX, AY, DZ и т.д.")
+    ) +
+
+    s("🔍", "Фильтры", "var(--accent2)",
+      a("Логика между группами", "<b>И</b> — позиция должна соответствовать всем активным группам фильтров одновременно. Пример: (A или B) И (метка ТО) И (запас > 3 мес).") +
+      a("Логика внутри группы", "<b>ИЛИ</b> — достаточно одного значения. Выбрали A и B — покажет и A, и B.") +
+      a("Запас от/до", "Числовые поля в месяцах. Работают по логике И с другими фильтрами.") +
+      a("Возраст остатка от/до", "Сколько месяцев назад был последний приход товара.") +
+      a("Остаток от/до", "Текущий остаток в штуках.") +
+      a("Сброс фильтров", "Кнопка «Сбросить» в тулбаре убирает все активные фильтры.")
+    ) +
+
+    s("📋", "Колонки таблицы", "var(--teal)",
+      a("Запас", "Остаток ÷ средние продажи в мес. Цвет: зелёный < 3мес, жёлтый 3-6, оранжевый 6-12, красный > 12.") +
+      a("Возраст остатка", "Сколько месяцев назад был последний приход. Показывает залежалость конкретной партии.") +
+      a("Мало на складе", "Количество месяцев, когда остаток был больше нуля, но меньше порога (настраивается в Настройки → Порог «мало на складе»). По умолчанию 0 — показывает месяцы с нулевым остатком. Помогает отличить «не продавалось» от «нечего было продавать».") +
+      a("Ср/мес", "Средние продажи в месяц только за активные периоды (когда были продажи).") +
+      a("Динамика", "Спарклайн продаж. Нажмите для открытия детальной таблицы по месяцам.")
+    ) +
+
+    s("⚡", "Авто-вывод", "var(--orange)",
+      a("Логика ИЛИ / И", "Переключатель в верхней части блока настроек. ИЛИ — позиция попадает если выполнено хотя бы одно условие (широкий захват). И — должны выполняться все включённые условия одновременно (узкий захват).") +
+      a("Стопы", "Позиции с активными стопами не попадают в авто-вывод независимо от условий: Новинки, Метки (ТО, ТНО и др.), короткая история.") +
+      a("Подтверждение", "Кнопка ✓ в списке «На вывод» подтверждает позицию. Кнопка ↩ рядом отменяет подтверждение.")
+    ) +
+
+    s("🤖", "ИИ-анализ", "var(--accent2)",
+      a("Модель", "claude-sonnet-4-6. Анализирует батчами по 20 позиций.") +
+      a("Данные для ИИ", "Всегда по суммарным данным (Все каналы), независимо от выбранного канала в тулбаре.") +
+      a("Пороги в настройках", "Блок «Настройки ИИ-анализа» в ⚙ Настройки. Пороги залежалости — ориентир, ИИ смотрит шире и учитывает контекст.") +
+      a("Рекомендации", "Вывод, Опт, Акция, Мотивация, Ждать, Норма. Позиции с метками ТО/ТНО/# получают Норма или Ждать.")
+    ) +
+
+    s("🏷️", "Метки", "var(--text2)",
+      a("Распознавание", "Метки ищутся как отдельные слова (через пробел или /). «ТР» внутри слова не распознаётся как метка.") +
+      a("ТО", "Топовая позиция. ТНО — на выводе. ТР — в рознице. Т — специфика. БРАК, # — особые статусы.") +
+      a("Нарезка, СЗ, Акция", "Служебные метки для учёта специфики позиции.")
+    ) +
+
+    s("💾", "Экспорт", "var(--green)",
+      a("Основной список", "Кнопка «↓ Excel» в тулбаре. Экспортирует текущий отфильтрованный список с помесячной динамикой продаж.") +
+      a("Список На вывод", "Кнопка «↓ Excel» во вкладке «На вывод». Содержит позиции, отправленные на вывод.") +
+      a("Настройки", "Экспорт / импорт настроек через кнопки в нижней части ⚙ Настройки — сохраняет все параметры в JSON.")
+    ) +
+
+    '</div>';
+  t && (t.style.display = "none");
+  document.getElementById("helpView") && (document.getElementById("helpView").style.display = "block");
+  const h = document.getElementById("helpContent");
+  if (h) h.innerHTML = o;
+  else {
+    const v = document.getElementById("mainView");
+    if (v) {
+      let hd = document.getElementById("helpView");
+      if (!hd) {
+        hd = document.createElement("div");
+        hd.id = "helpView";
+        hd.style.cssText = "padding:0;overflow:auto;max-height:calc(100vh - 52px)";
+        v.appendChild(hd);
+      }
+      hd.innerHTML = o;
+      hd.style.display = "block";
+    }
   }
-  e && (e.style.display = "none");
-  const o =
-    '<div style="padding:24px;max-width:860px"><div style="font-size:20px;font-weight:700;margin-bottom:4px">❓ Справка по системе аналитики</div><div style="font-size:12px;color:var(--text2);margin-bottom:24px">Описание всех показателей, формул, категорий и настроек.</div>' +
-    n(
-      "🧮",
-      "Ключевые формулы и показатели",
-      "#4f8ef7",
-      s(
-        "Средние продажи в месяц (активные)",
-        "Ср/мес = Сумма продаж ÷ Кол-во месяцев с ненулевыми продажами",
-        "Делим только на активные месяцы — месяцы где товара не было на складе (нули) не учитываются. Это даёт реальный темп продаж, а не заниженный из-за отсутствия товара.",
-      ) +
-        s(
-          "Залежалость (сколько продаваться)",
-          "Залежалость = Текущий остаток ÷ Ср/мес",
-          "Показывает сколько месяцев уйдёт на продажу текущего остатка при сохранении текущего темпа. Чем выше — тем хуже. Для новинок и сезонных товаров показатель может быть некорректным.",
-        ) +
-        s(
-          "Возраст остатка (сколько уже лежит)",
-          "Возраст = Кол-во месяцев с последнего прихода товара",
-          "Если есть вкладка Поступление — считается от последней даты прихода. Если прихода в периоде не было — возраст ≥ длины периода поступлений. Без вкладки Поступление — ищем последний скачок остатка вверх. Показывает как долго текущий остаток уже лежит на складе.",
-        ) +
-        s(
-          "Коэффициент вариации CV (для XYZ)",
-          "CV = Стандартное отклонение ÷ Среднее × 100%",
-          "Мера нестабильности продаж. Считается по ненулевым месяцам. Чем выше CV — тем непредсказуемее спрос.",
-        ),
-    ) +
-    n(
-      "📊",
-      "ABCD-анализ",
-      "#4f8ef7",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Ранжирует товары по вкладу в выручку (или в штучные продажи). Пороги настраиваются в ⚙ Настройки.</div>' +
-        a(
-          "A — " + CFG.abcdA + "% выручки",
-          "Ключевые товары. Приоритет в закупках, следить за наличием. Потеря = прямая потеря выручки.",
-        ) +
-        a("B — " + CFG.abcdB + "% выручки", "Важные товары. Держать в ассортименте, следить за остатками.") +
-        a("C — " + CFG.abcdC + "% выручки", "Второстепенные. Рассмотреть оптимизацию объёмов закупок.") +
-        a("D — " + CFG.abcdD + "% выручки", "Слабые продажи. Первые кандидаты на вывод из ассортимента."),
-    ) +
-    n(
-      "📈",
-      "XYZ-анализ",
-      "#2ecc71",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Оценивает стабильность спроса по коэффициенту вариации (CV). Пороги настраиваются в ⚙ Настройки.</div>' +
-        a(
-          "X — CV &lt; " + CFG.xyzX + "%",
-          "Стабильные продажи. Спрос предсказуем, легко планировать закупки. Минимальный страховой запас.",
-        ) +
-        a(
-          "Y — CV " + CFG.xyzX + "–" + CFG.xyzY + "%",
-          "Умеренно нестабильные. Есть колебания (сезонность, акции). Нужен страховой запас.",
-        ) +
-        a(
-          "Z — CV &gt; " + CFG.xyzY + "%",
-          "Непредсказуемые или сезонные. Закупать осторожно, не выводить в «не сезон».",
-        ),
-    ) +
-    n(
-      "🔴",
-      "Цветовые зоны залежалости и возраста",
-      "var(--orange)",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Одна шкала используется для обоих показателей. Границы настраиваются в ⚙ Настройки.</div>' +
-        a("🟢 Зелёный — норма", "Залежалость/возраст ≤ " + CFG.staleZone1 + " мес. Всё в порядке.") +
-        a("🟡 Жёлтый — внимание", CFG.staleZone1 + "–" + CFG.staleZone2 + " мес. Мониторинг, превентивные меры.") +
-        a("🟠 Оранжевый — риск", CFG.staleZone2 + "–" + CFG.staleZone3 + " мес. Нужны активные действия.") +
-        a("🔴 Красный — неликвид", CFG.staleZone3 + "–" + CFG.staleZone4 + " мес. Срочные меры.") +
-        a("⛔ Тёмно-красный — критично", "&gt; " + CFG.staleZone4 + " мес. Экстренные меры."),
-    ) +
-    n(
-      "🤖",
-      "ИИ-рекомендации — категории действий",
-      "#c080ff",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Claude анализирует каждую позицию по всем показателям и присваивает одну из 6 категорий.</div>' +
-        a(
-          "🔴 Вывод",
-          "Залежалость &gt;12 мес + кат D или тренд падение, или нет продаж при остатке. Переводить в Решётку → ТНО.",
-        ) +
-        a(
-          "🟣 Опт",
-          "Залежалость &gt;6 мес + большой остаток (&gt;" +
-            CFG.optMinStock +
-            " шт). Оптовая рассылка со скидкой, не розница.",
-        ) +
-        a("🟡 Акция", "Залежалость 6–12 мес + небольшой остаток. Скидка 20–30% в рознице.") +
-        a("🟢 Мотивация", "Залежалость 3–6 мес. Добавить в мотивацию консультантов, без скидок.") +
-        a("🟡 Ждать", "Новинка, сезонный товар (XYZ=Z), или тренд роста. Не трогать.") +
-        a("🟢 Норма", "Кат A/B, залежалость &lt;3 мес, стабильные продажи. Всё хорошо."),
-    ) +
-    n(
-      "⚡",
-      "Авто-вывод (формульный)",
-      "var(--orange)",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Работает без ИИ по настроенным правилам. Позиция попадает в список если выполнено хотя бы одно включённое условие. Новинки всегда исключаются. Настройки — в ⚙.</div>' +
-        a("Кат D + залежалость", "Наиболее очевидные кандидаты — слабые продажи и долго не продастся.") +
-        a("Супер-залежалость", "Любая категория, но срок продажи очень большой.") +
-        a("Нет продаж + остаток", "Товар на складе, но не продаётся совсем.") +
-        a("Возраст остатка", "Товар давно не получал пополнений — текущие единицы лежат долго.") +
-        a("Возраст + кат C/D", "Мягче: лежит давно и при этом не приоритетный товар.") +
-        a("Кат D + XYZ Z", "Слабые и нестабильные продажи — сложно планировать, лучше вывести.") +
-        a("Тренд падение", "Продажи снижаются + уже залежался — ситуация ухудшается."),
-    ) +
-    n(
-      "🏷",
-      "Метки позиций",
-      "var(--teal)",
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Определяются автоматически по наименованию товара. Используйте фильтры по меткам для массовых операций.</div>' +
-        a("ТНО", "Товар низкой обращаемости — уже на выводе. Рекомендуется удалить из анализа.") +
-        a("ТО", "Товар на выводе. Аналогично ТНО.") +
-        a("Т", "Суффикс в конце наименования.") +
-        a("#", "Позиция в Решётке — первая стадия вывода.") +
-        a("БРАК", "Бракованный товар. Удалить из анализа.") +
-        a("Нарезка", "Нарезанный товар. Обычно удаляется из основного анализа.") +
-        a("Каталог", "Каталожная позиция. Может не продаваться — витринная функция.") +
-        a("Акция", "Позиция в акции.") +
-        a("СЗ", "Специальный заказ.") +
-        a(
-          "🌱 Новинка",
-          "Первые остатки появились в последние " +
-            CFG.newItemMonths +
-            " мес. Исключается из авто-вывода, залежалость может быть некорректной.",
-        ),
-    ) +
-    n(
-      "📋",
-      "Рекомендуемый рабочий процесс",
-      "var(--text2)",
-      '<div style="font-size:11px;color:var(--text2);line-height:1.8"><b style="color:var(--text)">1.</b> Загрузить файл (Продажи + Остатки + Поступление)<br><b style="color:var(--text)">2.</b> Нажать «🗑 Удалить нулевые остатки» — убрать позиции без остатков<br><b style="color:var(--text)">3.</b> Через фильтр по меткам выделить и удалить: БРАК, Нарезка, Каталог (если нужно)<br><b style="color:var(--text)">4.</b> Отчёт пересчитается — смотрим реальную картину<br><b style="color:var(--text)">5.</b> Использовать фильтры по категориям, залежалости, возрасту для анализа<br><b style="color:var(--text)">6.</b> Нажать «⚡ Авто-вывод» для быстрой пометки очевидных кандидатов<br><b style="color:var(--text)">7.</b> Запустить «🤖 ИИ-рекомендации» для детального анализа<br><b style="color:var(--text)">8.</b> Проверить отмеченные позиции, снять лишние галочки, нажать «📤 На вывод»<br><b style="color:var(--text)">9.</b> Сохранить отчёт «На вывод» в Excel для передачи<br></div>',
-    ) +
-    "</div>";
-  t.innerHTML = o;
+}
+function handleDualMain(file, mainChannel) {
+  if (!file) return;
+  // Помечаем что основной файл = розница
+  salesRetail = null; salesWholesale = null;
+  const status = document.getElementById('dualRetailStatus');
+  handleFile(file);
+  // После handleFile allItems будут заполнены; помечаем продажи как розницу
+  // Это делается через onFileLoaded callback
+  window._dualMainChannel = mainChannel;
+  window._dualMainFile = file;
+}
+function handleDualSecond(file, secondChannel) {
+  if (!file || !allItems.length) { alert('Сначала загрузите основной файл (Розница)'); return; }
+  showLoading('Читаю файл ' + (secondChannel === 'wholesale' ? 'опта' : 'розницы') + '...');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'array', cellDates: true });
+      const shName = findSheet(wb, ['Продажи', 'продажи', 'Sales']);
+      if (!shName) { hideLoading(); alert('Не найден лист «Продажи»'); return; }
+      const sales = parseSales(wb.Sheets[shName]);
+      if (secondChannel === 'wholesale') salesWholesale = sales;
+      else salesRetail = sales;
+      // Заполняем данные канала для всех позиций
+      allItems.forEach(function(item) {
+        const nm = item.name, mos = item.months;
+        const w = extractSalesArrays(salesWholesale, nm, mos);
+        item.monthlyQtyWholesale = w.monthlyQty;
+        item.monthlyRevWholesale = w.monthlyRev;
+        item.totalQtyWholesale = w.monthlyQty.reduce(function(a,b){return a+b;},0);
+        item.totalRevWholesale = w.monthlyRev.reduce(function(a,b){return a+b;},0);
+        // Розница = всё что было (Total) минус опт
+        if (!item.monthlyQtyRetail) {
+          item.monthlyQtyRetail = item.monthlyQtyTotal.map(function(v,i){return Math.max(0,v-(w.monthlyQty[i]||0));});
+          item.monthlyRevRetail = item.monthlyRevTotal.map(function(v,i){return Math.max(0,v-(w.monthlyRev[i]||0));});
+          item.totalQtyRetail = item.monthlyQtyRetail.reduce(function(a,b){return a+b;},0);
+          item.totalRevRetail = item.monthlyRevRetail.reduce(function(a,b){return a+b;},0);
+        }
+      });
+      hideLoading();
+      const st = document.getElementById('dualWholesaleStatus');
+      if (st) { st.style.display = 'inline'; }
+      updateChannelUI();
+      applyChannel();
+      // Оба файла загружены — переходим к аналитике
+      document.getElementById('uploadView').style.display = 'none';
+      document.getElementById('mainView').style.display = 'block';
+    } catch(e) { hideLoading(); alert('Ошибка: ' + e.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function updateChannelUI() {
+  const el = document.getElementById('channelSwitcher');
+  const hasDual = dualFileMode && (salesRetail !== null || salesWholesale !== null);
+  if (el) el.style.display = hasDual ? 'flex' : 'none';
+}
+function setChannel(ch) {
+  currentChannel = ch;
+  document.querySelectorAll('.btn-channel').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.ch === ch);
+  });
+  applyChannel();
+}
+function setUploadMode(mode) {
+  dualFileMode = mode === 'dual';
+  document.getElementById('modeSingle').classList.toggle('active', !dualFileMode);
+  document.getElementById('modeDual').classList.toggle('active', dualFileMode);
+  const uz = document.getElementById('uploadZone');
+  const dz = document.getElementById('dualZone');
+  if (uz) uz.style.display = dualFileMode ? 'none' : 'block';
+  if (dz) dz.style.display = dualFileMode ? 'block' : 'none';
 }
 function resetApp() {
   ((allItems = []),
@@ -2433,6 +2573,10 @@ function resetApp() {
     deletedIds.clear(),
     (aiRecsMap = {}),
     (confirmedVyvodIds = new Set()),
+    (salesRetail = null),
+    (salesWholesale = null),
+    (currentChannel = 'all'),
+    (dualFileMode = false),
     (showDeleted = !0),
     (autoFilterIds = null),
     (aiFilter = null),
@@ -2445,6 +2589,10 @@ function resetApp() {
     (document.getElementById("fileNameDisplay").style.display = "none"),
     (document.getElementById("btnReset").style.display = "none"),
     (document.getElementById("fileInput").value = ""),
+    (document.getElementById("fileInputRetail") && (document.getElementById("fileInputRetail").value = "")),
+    (document.getElementById("fileInputWholesale") && (document.getElementById("fileInputWholesale").value = "")),
+    (document.getElementById("dualZone") && (document.getElementById("dualZone").style.display = "none")),
+    (document.getElementById("singleZone") && (document.getElementById("singleZone").style.display = "block")),
     document.querySelectorAll(".report-tab").forEach((t) => t.remove()));
 }
 function fmtM(t) {
@@ -2470,6 +2618,9 @@ function chipH(t) {
   "Enter" === t.key && confirmModal();
 }),
   apiKey && document.getElementById("apiKeyUpfront") && (document.getElementById("apiKeyUpfront").value = apiKey));
+
+
+
 
 </script>
 </body>
