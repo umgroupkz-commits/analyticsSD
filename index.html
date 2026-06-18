@@ -923,8 +923,44 @@ function getChannelTotalQty(item) {
   if (currentChannel === 'wholesale') return item.totalQtyWholesale || 0;
   return item.totalQty;
 }
+function buildItemChannelData(item) {
+  // Если months пустой — восстанавливаем из salesWholesale или salesRetail
+  if ((!item.months || item.months.length === 0)) {
+    if (salesWholesale && salesWholesale[item.name] && salesWholesale[item.name].months && salesWholesale[item.name].months.length > 0) {
+      item.months = salesWholesale[item.name].months;
+    } else if (salesRetail && salesRetail[item.name] && salesRetail[item.name].months && salesRetail[item.name].months.length > 0) {
+      item.months = salesRetail[item.name].months;
+    }
+  }
+  const mos = item.months || [];
+  if (mos.length === 0) return;
+  // Строим данные каналов напрямую из источников
+  const mqR = [], mrR = [], mqW = [], mrW = [];
+  for (let i = 0; i < mos.length; i++) {
+    const m = mos[i];
+    const rdR = salesRetail && salesRetail[item.name] ? (salesRetail[item.name].monthData[m] || {qty:0,rev:0}) : {qty:0,rev:0};
+    const rdW = salesWholesale && salesWholesale[item.name] ? (salesWholesale[item.name].monthData[m] || {qty:0,rev:0}) : {qty:0,rev:0};
+    mqR.push(rdR.qty || 0); mrR.push(rdR.rev || 0);
+    mqW.push(rdW.qty || 0); mrW.push(rdW.rev || 0);
+  }
+  item.monthlyQtyRetail = mqR; item.monthlyRevRetail = mrR;
+  item.totalQtyRetail = mqR.reduce(function(a,b){return a+b;},0);
+  item.totalRevRetail = mrR.reduce(function(a,b){return a+b;},0);
+  item.monthlyQtyWholesale = mqW; item.monthlyRevWholesale = mrW;
+  item.totalQtyWholesale = mqW.reduce(function(a,b){return a+b;},0);
+  item.totalRevWholesale = mrW.reduce(function(a,b){return a+b;},0);
+  item.monthlyQtyTotal = mos.map(function(_,i){return mqR[i]+mqW[i];});
+  item.monthlyRevTotal = mos.map(function(_,i){return mrR[i]+mrW[i];});
+  item.totalQtyTotal = item.monthlyQtyTotal.reduce(function(a,b){return a+b;},0);
+  item.totalRevTotal = item.monthlyRevTotal.reduce(function(a,b){return a+b;},0);
+}
+
 function applyChannel() {
   allItems.forEach(function(item) {
+    // Восстанавливаем данные каналов если нужно
+    if (dualFileMode && (salesRetail || salesWholesale)) {
+      buildItemChannelData(item);
+    }
     const qty = getChannelQty(item);
     const rev = getChannelRev(item);
     item.monthlyQty = qty;
@@ -1472,174 +1508,145 @@ function renderTable() {
 function showChart(t) {
   const e = allItems.find((e) => e.id === t);
   if (!e) return;
-  console.log("showChart:", e.name);
-  console.log("salesRetail:", salesRetail ? Object.keys(salesRetail).length + " items" : "null");
-  console.log("salesWholesale:", salesWholesale ? Object.keys(salesWholesale).length + " items" : "null");
-  console.log("item in salesWholesale:", salesWholesale ? (e.name in salesWholesale) : "n/a");
-  console.log("item.months:", e.months);
-  console.log("item.monthlyQty:", e.monthlyQty);
-  if (salesWholesale && salesWholesale[e.name]) {
-    console.log("wholesale monthData keys:", Object.keys(salesWholesale[e.name].monthData));
-  }
   try {
-  const n = _mqAll.filter(function(v){return v>0;}).length,
-    a = (e.isNewItem, aiRecsMap[e.id]);
-  (a && (a.action, a.text),
-    (document.getElementById("chartTitle").textContent = e.name),
-    (document.getElementById("chartSub").innerHTML =
-      `<span class="badge badge-${e.catABCD_money}" style="margin-right:4px">${e.catABCD_money}</span><span class="badge badge-${e.catXYZ}" style="margin-right:4px">${e.catXYZ}</span><span class="badge badge-${e.catABCD_avg}" style="margin-right:8px" title="ABCD ср/мес">${e.catABCD_avg}⌀</span>` +
+    // ── 1. Определяем список месяцев ──────────────────────────
+    // Приоритет: item.months → salesWholesale → salesRetail → _stockByDate
+    let o = [];
+    if (e.months && e.months.length > 0) {
+      o = e.months;
+    } else if (salesWholesale && salesWholesale[e.name] && salesWholesale[e.name].months && salesWholesale[e.name].months.length > 0) {
+      o = salesWholesale[e.name].months;
+    } else if (salesRetail && salesRetail[e.name] && salesRetail[e.name].months && salesRetail[e.name].months.length > 0) {
+      o = salesRetail[e.name].months;
+    } else {
+      // Из остатков — формат DD.MM.YYYY → название
+      const mn = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const seen = {};
+      Object.keys(e._stockByDate || {}).forEach(function(k) {
+        const parts = k.split(".");
+        if (parts.length < 3) return;
+        const key = parts[1] + "." + parts[2];
+        if (!seen[key]) { seen[key] = true; o.push(mn[parseInt(parts[1])-1] + " " + parts[2] + " г."); }
+      });
+    }
+
+    // ── 2. Данные продаж по месяцам ────────────────────────────
+    // Читаем напрямую из salesRetail/salesWholesale
+    const mqR = [], mrR = [], mqW = [], mrW = [];
+    for (let i = 0; i < o.length; i++) {
+      const m = o[i];
+      const rdR = salesRetail && salesRetail[e.name] ? (salesRetail[e.name].monthData[m] || {qty:0,rev:0}) : {qty:0,rev:0};
+      const rdW = salesWholesale && salesWholesale[e.name] ? (salesWholesale[e.name].monthData[m] || {qty:0,rev:0}) : {qty:0,rev:0};
+      mqR.push(rdR.qty || 0); mrR.push(rdR.rev || 0);
+      mqW.push(rdW.qty || 0); mrW.push(rdW.rev || 0);
+    }
+    const mqAll = mqR.map(function(v,i){ return v + mqW[i]; });
+    const mrAll = mrR.map(function(v,i){ return v + mrW[i]; });
+
+    // ── 3. Выбираем данные по текущему каналу ──────────────────
+    const chanQty = currentChannel === 'retail' ? mqR : currentChannel === 'wholesale' ? mqW : mqAll;
+    const chanRev = currentChannel === 'retail' ? mrR : currentChannel === 'wholesale' ? mrW : mrAll;
+    const nActive = chanQty.filter(function(v){return v>0;}).length;
+    const hasDual = dualFileMode && currentChannel === 'all' && (mqR.some(function(v){return v>0;}) || mqW.some(function(v){return v>0;}));
+
+    // ── 4. Заголовок карточки ──────────────────────────────────
+    const a = aiRecsMap[e.id];
+    document.getElementById("chartTitle").textContent = e.name;
+    document.getElementById("chartSub").innerHTML =
+      `<span class="badge badge-${e.catABCD_money}" style="margin-right:4px">${e.catABCD_money}</span>` +
+      `<span class="badge badge-${e.catXYZ}" style="margin-right:4px">${e.catXYZ}</span>` +
+      `<span class="badge badge-${e.catABCD_avg}" style="margin-right:8px">${e.catABCD_avg}⌀</span>` +
       (e.isNewItem ? '<span class="chip chip-new" style="margin-right:8px">Новинка</span>' : "") +
-      (e.isGhost ? '<span style="margin-right:8px;padding:2px 7px;border-radius:4px;background:#2a1a00;border:1px solid #5a3a00;color:#ffaa40;font-size:11px;font-weight:600">❓Нет данных</span>' : "") +
-      (a
-        ? `<span class="rec-badge rec-${{ Вывод: "vyvod", Опт: "opt", Акция: "akc", Мотивация: "motiv", Ждать: "wait", Норма: "norm" }[a.action] || "norm"}" style="margin-right:8px">${a.action}</span><span style="color:var(--text2);font-size:10px">${escHtml(a.text)}</span>`
-        : "") +
+      (a ? `<span class="rec-badge rec-${{Вывод:"vyvod",Опт:"opt",Акция:"akc",Мотивация:"motiv",Ждать:"wait",Норма:"norm"}[a.action]||"norm"}" style="margin-right:8px">${a.action}</span><span style="color:var(--text2);font-size:10px">${escHtml(a.text)}</span>` : "") +
       `<br><span style="color:var(--text3)">Ср/мес: </span><strong>${e.avgQtyPerMonth.toFixed(1)} шт</strong>` +
-      `<span style="color:var(--text3);margin-left:12px">Ср/мес ₸: </span><strong>${e.avgRevPerMonth >= 1000 ? Math.round(e.avgRevPerMonth/1000)+' тыс' : Math.round(e.avgRevPerMonth)+' ₸'}</strong>` +
-      `<span style="color:var(--text3);margin-left:12px">Актив. мес: </span><strong>${n}/${e.months.length}</strong>` +
+      `<span style="color:var(--text3);margin-left:12px">Актив. мес: </span><strong>${nActive}/${o.length}</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Тек. остаток: </span><strong>${fmtN(e.currentStock)} шт</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Запас: </span><strong class="${getStaleCls(e.staleMonths)} stale-value">${fmtStale(e.staleMonths)}</strong>` +
-      `<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(e.stockAge)} stale-value" title="Сколько месяцев прошло с последнего прихода товара">${0 === e.stockAge ? "&lt;1мес" : e.stockAge + "мес"}</strong>` +
-      ""));
-  const s = e._stockByDate || {},
-    o = (e.months && e.months.length > 0) ? e.months :
-        // Нет продаж — берём месяцы из остатков
-        Object.keys(e._stockByDate || {}).map(function(k) {
-          const parts = k.split(".");
-          if (parts.length < 3) return null;
-          // формат DD.MM.YYYY
-          const mn = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-          return mn[parseInt(parts[1])-1] + " " + parts[2] + " г.";
-        }).filter(Boolean),
-    l = e._arrInfo,
-    c = {};
-  let d = 0;
-  l && l.arrKeys
-    ? l.arrKeys.forEach((t, e) => {
-        t && ((c[t] = l.monthlyArr[e] || 0), (d += l.monthlyArr[e] || 0));
-      })
-    : l &&
-      l.arrDates &&
-      l.arrDates.forEach((t, e) => {
-        if (!t) return;
-        const n = String(t.getUTCMonth() + 1).padStart(2, "0") + "." + t.getUTCFullYear();
-        ((c[n] = l.monthlyArr[e] || 0), (d += l.monthlyArr[e] || 0));
+      `<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(e.stockAge)} stale-value">${e.stockAge === 0 ? "&lt;1мес" : e.stockAge + "мес"}</strong>`;
+
+    // ── 5. Таблица по месяцам ──────────────────────────────────
+    const s = e._stockByDate || {};
+    const arrInfo = e._arrInfo;
+    // Индексируем приходы по месяцам
+    const arrByMonth = {};
+    if (arrInfo && arrInfo.arrKeys) {
+      arrInfo.arrKeys.forEach(function(k, i) { if (k) arrByMonth[k] = (arrByMonth[k]||0) + (arrInfo.monthlyArr[i]||0); });
+    } else if (arrInfo && arrInfo.arrDates) {
+      arrInfo.arrDates.forEach(function(d, i) {
+        if (!d) return;
+        const k = String(d.getUTCMonth()+1).padStart(2,"0") + "." + d.getUTCFullYear();
+        arrByMonth[k] = (arrByMonth[k]||0) + (arrInfo.monthlyArr[i]||0);
       });
-  // Данные каналов для карточки — строим напрямую из salesRetail/salesWholesale
-  // чтобы не зависеть от состояния item.monthlyQty
-  const _r = salesRetail ? extractSalesArrays(salesRetail, e.name, o) : null;
-  const _w = salesWholesale ? extractSalesArrays(salesWholesale, e.name, o) : null;
-  const _mqR = _r ? _r.monthlyQty : (e.monthlyQtyRetail || []);
-  const _mrR = _r ? _r.monthlyRev : (e.monthlyRevRetail || []);
-  const _mqW = _w ? _w.monthlyQty : (e.monthlyQtyWholesale || []);
-  const _mrW = _w ? _w.monthlyRev : (e.monthlyRevWholesale || []);
-  // Суммарные по каналу
-  const _mqAll = o.map(function(_,i){ return (_mqR[i]||0)+(_mqW[i]||0); });
-  const _mrAll = o.map(function(_,i){ return (_mrR[i]||0)+(_mrW[i]||0); });
-  const _hasDual = dualFileMode && currentChannel === 'all' && (_mqR.some(function(v){return v>0;}) || _mqW.some(function(v){return v>0;}));
-  let r = 0,
-    i = 0,
-    g = "";
-  for (let t = 0; t < o.length; t++) {
-    const n = o[t],
-      a = (currentChannel === "retail" ? _mqR : currentChannel === "wholesale" ? _mqW : _mqAll)[t] || 0,
-      l = (currentChannel === "retail" ? _mrR : currentChannel === "wholesale" ? _mrW : _mrAll)[t] || 0;
-    ((r += a), (i += l));
-    // Получаем остаток — _stockByDate ключи в формате DD.MM.YYYY
-    // Конвертируем название месяца "Май 2025 г." → "05.2025" для поиска
-    const h_parts = {Январь:"01",Февраль:"02",Март:"03",Апрель:"04",Май:"05",Июнь:"06",
-                    Июль:"07",Август:"08",Сентябрь:"09",Октябрь:"10",Ноябрь:"11",Декабрь:"12"};
-    const _ny = n.replace(" г.","").split(" ");
-    const _monthNum = h_parts[_ny[0]];
-    const _year = _ny[1];
-    // Ищем в _stockByDate запись у которой MM и YYYY совпадают
-    let p = null;
-    if (_monthNum && _year) {
-      const _prefix = _monthNum + "." + _year; // MM.YYYY
-      for (const _dk of Object.keys(s)) {
-        const _dp = _dk.split(".");
-        if (_dp.length === 3 && _dp[1] === _monthNum && _dp[2] === _year) {
-          p = s[_dk]; break;
+    }
+    const totalArr = Object.values(arrByMonth).reduce(function(a,b){return a+b;},0);
+
+    // Строим строки таблицы
+    let totalQty = 0, totalRev = 0, g = "";
+    for (let i = 0; i < o.length; i++) {
+      const monthName = o[i];
+      const qty = chanQty[i] || 0;
+      const rev = chanRev[i] || 0;
+      totalQty += qty; totalRev += rev;
+
+      // Остаток из _stockByDate — ищем по MM.YYYY
+      const mn2n = {Январь:"01",Февраль:"02",Март:"03",Апрель:"04",Май:"05",Июнь:"06",Июль:"07",Август:"08",Сентябрь:"09",Октябрь:"10",Ноябрь:"11",Декабрь:"12"};
+      const parts = monthName.replace(" г.","").split(" ");
+      const mmKey = (mn2n[parts[0]] || "00") + "." + (parts[1] || "");
+      const ddKey = "01." + mmKey; // DD.MM.YYYY формат
+      // Ищем остаток — ключ может быть любым DD в этом месяце
+      let stockVal = null;
+      for (const dk of Object.keys(s)) {
+        const dp = dk.split(".");
+        if (dp.length === 3 && dp[1] === (mn2n[parts[0]]||"00") && dp[2] === (parts[1]||"")) {
+          stockVal = s[dk]; break;
         }
       }
+
+      // Приход
+      const arrVal = arrByMonth[mmKey] || null;
+      const avgQ = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0;
+      const stale = stockVal !== null && avgQ > 0 ? stockVal / avgQ : null;
+      const staleCls = stale !== null ? getStaleCls(stale) : "";
+      const mShort = monthName.replace(" г.","").replace("2025","'25").replace("2026","'26");
+
+      g += `<tr><td>${mShort}</td>` +
+        `<td class="${qty===0?"val-zero":"val-pos"}">${qty===0?"—":fmtN(qty)}</td>` +
+        `<td class="${rev===0?"val-zero":"val-pos"}">${rev===0?"—":fmtM(rev)}</td>` +
+        `<td style="${arrVal&&arrVal>0?"color:#60aaff;font-weight:600":"color:var(--text3)"}">${arrVal&&arrVal>0?"+"+fmtN(arrVal):"—"}</td>` +
+        `<td>${stockVal!==null?fmtN(stockVal):"н/д"}</td>` +
+        `<td class="stale-cell ${staleCls}">${stale===null?"—":stale>=999?"∞":stale<1?Math.round(30*stale)+"д":stale.toFixed(1)+"мес"}</td></tr>`;
+
+      // Строки каналов при режиме Все
+      if (hasDual) {
+        const rq = mqR[i]||0, rr = mrR[i]||0, wq = mqW[i]||0, wr = mrW[i]||0;
+        g += `<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:var(--teal)">↳ Розница</td>` +
+          `<td class="${rq===0?"val-zero":"val-pos"}">${rq===0?"—":fmtN(rq)}</td>` +
+          `<td class="${rr===0?"val-zero":"val-pos"}">${rr===0?"—":fmtM(rr)}</td>` +
+          `<td></td><td></td><td></td></tr>`;
+        g += `<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:var(--accent2)">↳ Опт</td>` +
+          `<td class="${wq===0?"val-zero":"val-pos"}">${wq===0?"—":fmtN(wq)}</td>` +
+          `<td class="${wr===0?"val-zero":"val-pos"}">${wr===0?"—":fmtM(wr)}</td>` +
+          `<td></td><td></td><td></td></tr>`;
+      }
     }
-    const u = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0,
-      f = null !== p && u > 0 ? p / u : null,
-      v = null !== f ? getStaleCls(f) : "",
-      m = n.replace(" г.", "").replace("2025", "'25").replace("2026", "'26"),
-      h = {
-        Январь: "01",
-        Февраль: "02",
-        Март: "03",
-        Апрель: "04",
-        Май: "05",
-        Июнь: "06",
-        Июль: "07",
-        Август: "08",
-        Сентябрь: "09",
-        Октябрь: "10",
-        Ноябрь: "11",
-        Декабрь: "12",
-      },
-      y = n.replace(" г.", "").split(" "),
-      b = h[y[0]] ? h[y[0]] + "." + y[1] : null,
-      x = b && void 0 !== c[b] ? c[b] : null;
-    g +=
-      "<tr><td>" +
-      m +
-      '</td><td class="' +
-      (0 === a ? "val-zero" : "val-pos") +
-      '">' +
-      (0 === a ? "—" : fmtN(a)) +
-      '</td><td class="' +
-      (0 === l ? "val-zero" : "val-pos") +
-      '">' +
-      (0 === l ? "—" : fmtM(l)) +
-      '</td><td style="' +
-      (null !== x && x > 0 ? "color:#60aaff;font-weight:600" : "color:var(--text3)") +
-      '">' +
-      (null === x ? "н/д" : 0 === x ? "—" : "+" + fmtN(x)) +
-      '</td><td class="' +
-      (0 === p || null === p ? "val-zero" : "val-pos") +
-      '">' +
-      (null === p ? "—" : fmtN(p)) +
-      '</td><td class="stale-cell ' +
-      v +
-      '">' +
-      (null === f ? "—" : f >= 999 ? "∞" : f < 1 ? Math.round(30 * f) + "д" : f.toFixed(1) + "мес") +
-      "</td></tr>";
-    if (_hasDual) {
-      const _rQty = _mqR[t] || 0, _rRev = _mrR[t] || 0;
-      const _wQty = _mqW[t] || 0, _wRev = _mrW[t] || 0;
-      g += '<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:var(--teal)">↳ Розница</td>'
-        + '<td class="' + (0===_rQty?'val-zero':'val-pos') + '">' + (0===_rQty?'—':fmtN(_rQty)) + '</td>'
-        + '<td class="' + (0===_rRev?'val-zero':'val-pos') + '">' + (0===_rRev?'—':fmtM(_rRev)) + '</td>'
-        + '<td></td><td></td><td></td></tr>';
-      g += '<tr style="opacity:0.65;font-size:10px"><td style="padding-left:16px;color:#c080ff">↳ Опт</td>'
-        + '<td class="' + (0===_wQty?'val-zero':'val-pos') + '">' + (0===_wQty?'—':fmtN(_wQty)) + '</td>'
-        + '<td class="' + (0===_wRev?'val-zero':'val-pos') + '">' + (0===_wRev?'—':fmtM(_wRev)) + '</td>'
-        + '<td></td><td></td><td></td></tr>';
-    }
-  }
-  const p = e.avgQtyPerMonth > 0 ? e.currentStock / e.avgQtyPerMonth : null,
-    u = null !== p ? getStaleCls(p) : "";
-  ((g +=
-    '<tr class="summary-row"><td>ИТОГО / ТЕКУЩИЙ</td><td>' +
-    fmtN(r) +
-    " шт</td><td>" +
-    fmtM(i) +
-    ' ₸</td><td style="color:#60aaff;font-weight:600">' +
-    (d > 0 ? "+" + fmtN(d) + " шт" : "н/д") +
-    "</td><td>" +
-    fmtN(e.currentStock) +
-    ' шт</td><td class="stale-cell ' +
-    u +
-    '">' +
-    (null === p ? "—" : p >= 999 ? "∞" : fmtStale(p)) +
-    "</td></tr>"),
-    (document.getElementById("chartBars").innerHTML =
-      `\n    <table class="detail-table">\n      <thead><tr>\n        <th>Месяц</th>\n        <th>Продажи шт</th>\n        <th>Выручка ₸</th>\n        <th>Приход шт</th>\n        <th>Остаток шт</th>\n        <th>Запас</th>\n      </tr></thead>\n      <tbody>${g}</tbody>\n    </table>`),
-    (document.getElementById("chartOverlay").style.display = "flex"));
-  } catch(err) { console.error("showChart error:", err); alert("Ошибка: " + err.message); }
+
+    // Итоговая строка
+    const staleNow = e.avgQtyPerMonth > 0 ? e.currentStock / e.avgQtyPerMonth : null;
+    g += `<tr class="summary-row"><td>ИТОГО / ТЕКУЩИЙ</td>` +
+      `<td>${fmtN(totalQty)} шт</td><td>${fmtM(totalRev)} ₸</td>` +
+      `<td style="color:#60aaff;font-weight:600">${totalArr>0?"+"+fmtN(totalArr)+" шт":"н/д"}</td>` +
+      `<td>${fmtN(e.currentStock)} шт</td>` +
+      `<td class="stale-cell ${getStaleCls(e.staleMonths)}">${staleNow===null?"—":staleNow>=999?"∞":staleNow.toFixed(1)+"мес"}</td></tr>`;
+
+    document.getElementById("chartBars").innerHTML = `
+    <table class="detail-table">
+      <thead><tr>
+        <th>Месяц</th><th>Продажи шт</th><th>Выручка ₸</th><th>Приход шт</th><th>Остаток шт</th><th>Запас</th>
+      </tr></thead>
+      <tbody>${g}</tbody>
+    </table>`;
+    document.getElementById("chartOverlay").style.display = "flex";
+  } catch(err) { console.error("showChart error:", err.message, err); alert("Ошибка: " + err.message); }
 }
 function renderStockAge(t, e) {
   return e && 0 !== e
