@@ -296,6 +296,29 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
   </div>
 </div>
 
+<!-- Modal создания отчёта -->
+<div id="reportCreateModal" style="display:none;position:fixed;inset:0;background:rgba(30,40,70,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:380px;max-width:500px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:14px">📋 Добавить в отчёт</div>
+    <div id="reportExistingList" style="margin-bottom:12px"></div>
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;border-top:1px solid var(--border);padding-top:12px">Создать новый отчёт:</div>
+    <input id="reportNameInput" type="text" placeholder="Название отчёта..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13px;background:var(--surface2);color:var(--text);margin-bottom:10px">
+    <div style="display:flex;gap:16px;margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
+        <input type="radio" name="reportMode" id="reportModeCopy" value="copy" checked> Копировать
+        <span style="font-size:11px;color:var(--text3)">(остаются в таблице)</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
+        <input type="radio" name="reportMode" id="reportModeMove" value="move"> Переносить
+        <span style="font-size:11px;color:var(--text3)">(исчезают из таблицы)</span>
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('reportCreateModal').style.display='none'">Отмена</button>
+      <button class="btn btn-primary btn-sm" onclick="submitReportCreate()">Создать</button>
+    </div>
+  </div>
+</div>
 <!-- MAIN -->
 <div id="mainView" style="display:none">
   <div class="tabs-bar" id="tabsBar">
