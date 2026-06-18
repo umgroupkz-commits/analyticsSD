@@ -1162,7 +1162,7 @@ function renderFilterChips() {
   const t = document.getElementById("filterChips"),
     e = getActiveFilterCount() > 0 || hiddenIds.size > 0;
   let n =
-    '<div class="filter-chips" style="border-bottom:none;padding-bottom:4px"><span class="toolbar-label">Фильтры <span style="font-size:10px;color:var(--accent);font-weight:400;cursor:pointer;text-decoration:underline" onclick="switchTab('help',this)" title="Открыть справку по фильтрам">(как работает?)</span>:</span>';
+    '<div class="filter-chips" style="border-bottom:none;padding-bottom:4px"><span class="toolbar-label">Фильтры <span style="font-size:10px;color:var(--accent);font-weight:400;cursor:pointer;text-decoration:underline" onclick="switchTab(\'help\',document.querySelector(\'[data-tab=help]\'))" title="Открыть справку">(как работает?)</span>:</span>';
   for (const t of ["A", "B", "C", "D"]) {
     const e = activeFilters.cats.has(t);
     n += `<span class="fchip cat-${t.toLowerCase()} ${e ? "active" : ""}" data-ftype="cats" data-fval="${t}" onclick="toggleFilter('cats','${t}',this)">${t}</span>`;
