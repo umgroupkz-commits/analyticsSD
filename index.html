@@ -727,7 +727,6 @@ function handleFile(t) {
       (updateLoading("Парсю продажи..."),
         setTimeout(() => {
           const t = parseSales(e.Sheets[n]);
-          if (dualFileMode) salesRetail = t; // сохраняем продажи розницы
           (updateLoading("Парсю остатки..."),
             setTimeout(() => {
               const n = parseStock(e.Sheets[a]);
@@ -736,7 +735,8 @@ function handleFile(t) {
                   const a = s ? parseArrivals(e.Sheets[s]) : new Map();
                   (updateLoading("Совмещаю..."),
                     setTimeout(() => {
-                      ((allItems = mergeData(t, n, a, salesRetail, salesWholesale)),
+                      ((dualFileMode && (salesRetail = t)),
+                      (allItems = mergeData(t, n, a, salesRetail, salesWholesale)),
                         (function() {
                           if (dualFileMode) {
                             // Основной файл загружен — его продажи = розница
