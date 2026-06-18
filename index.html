@@ -1034,6 +1034,11 @@ function mergeData(t, e, n, retailSales, wholesaleSales) {
       item.monthlyRevWholesale = w.monthlyRev;
       item.totalQtyWholesale = w.monthlyQty.reduce((a,b)=>a+b,0);
       item.totalRevWholesale = w.monthlyRev.reduce((a,b)=>a+b,0);
+      // Total = retail + wholesale
+      item.monthlyQtyTotal = mos.map(function(m,i){return (r.monthlyQty[i]||0)+(w.monthlyQty[i]||0);});
+      item.monthlyRevTotal = mos.map(function(m,i){return (r.monthlyRev[i]||0)+(w.monthlyRev[i]||0);});
+      item.totalQtyTotal = item.monthlyQtyTotal.reduce(function(a,b){return a+b;},0);
+      item.totalRevTotal = item.monthlyRevTotal.reduce(function(a,b){return a+b;},0);
     });
   }
   return s;
