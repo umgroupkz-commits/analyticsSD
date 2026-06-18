@@ -1463,10 +1463,7 @@ function showChart(t) {
   const e = allItems.find((e) => e.id === t);
   if (!e) return;
   try {
-  const _chanQty = currentChannel === "retail" && e.monthlyQtyRetail ? e.monthlyQtyRetail :
-    currentChannel === "wholesale" && e.monthlyQtyWholesale ? e.monthlyQtyWholesale :
-    (e.monthlyQtyTotal || e.monthlyQty);
-  const n = _chanQty.filter((t) => t > 0).length,
+  const n = (e.monthlyQty || []).filter((t) => t > 0).length,
     a = (e.isNewItem, aiRecsMap[e.id]);
   (a && (a.action, a.text),
     (document.getElementById("chartTitle").textContent = e.name),
@@ -1517,12 +1514,9 @@ function showChart(t) {
     g = "";
   for (let t = 0; t < o.length; t++) {
     const n = o[t],
-      a = (currentChannel === "retail" && e.monthlyQtyRetail ? e.monthlyQtyRetail :
-           currentChannel === "wholesale" && e.monthlyQtyWholesale ? e.monthlyQtyWholesale :
-           (e.monthlyQtyTotal || e.monthlyQty))[t] || 0,
-      l = (currentChannel === "retail" && e.monthlyRevRetail ? e.monthlyRevRetail :
-           currentChannel === "wholesale" && e.monthlyRevWholesale ? e.monthlyRevWholesale :
-           (e.monthlyRevTotal || e.monthlyRev))[t] || 0;
+      // item.monthlyQty уже содержит правильные данные по каналу после applyChannel
+      a = (e.monthlyQty || [])[t] || 0,
+      l = (e.monthlyRev || [])[t] || 0;
     ((r += a), (i += l));
     // Получаем остаток по ключу месяца
     const _mkeys = Object.keys(s);
