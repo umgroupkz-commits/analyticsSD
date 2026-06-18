@@ -2771,6 +2771,7 @@ function renderHelp() {
 function handleDualMain(file) {
   if (!file) return;
   salesRetail = null;
+  dualFileMode = true; // устанавливаем ДО handleFile чтобы сработал блок retail
   // Показываем статус
   const st = document.getElementById('dualRetailStatus');
   const sn = document.getElementById('dualRetailName');
