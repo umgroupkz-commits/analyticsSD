@@ -1472,8 +1472,17 @@ function renderTable() {
 function showChart(t) {
   const e = allItems.find((e) => e.id === t);
   if (!e) return;
+  console.log("showChart:", e.name);
+  console.log("salesRetail:", salesRetail ? Object.keys(salesRetail).length + " items" : "null");
+  console.log("salesWholesale:", salesWholesale ? Object.keys(salesWholesale).length + " items" : "null");
+  console.log("item in salesWholesale:", salesWholesale ? (e.name in salesWholesale) : "n/a");
+  console.log("item.months:", e.months);
+  console.log("item.monthlyQty:", e.monthlyQty);
+  if (salesWholesale && salesWholesale[e.name]) {
+    console.log("wholesale monthData keys:", Object.keys(salesWholesale[e.name].monthData));
+  }
   try {
-  const n = (e.monthlyQty || []).filter((t) => t > 0).length,
+  const n = _mqAll.filter(function(v){return v>0;}).length,
     a = (e.isNewItem, aiRecsMap[e.id]);
   (a && (a.action, a.text),
     (document.getElementById("chartTitle").textContent = e.name),
@@ -1515,20 +1524,25 @@ function showChart(t) {
         const n = String(t.getUTCMonth() + 1).padStart(2, "0") + "." + t.getUTCFullYear();
         ((c[n] = l.monthlyArr[e] || 0), (d += l.monthlyArr[e] || 0));
       });
-  // Данные каналов для карточки
-  const _mqR = e.monthlyQtyRetail || [];
-  const _mrR = e.monthlyRevRetail || [];
-  const _mqW = e.monthlyQtyWholesale || [];
-  const _mrW = e.monthlyRevWholesale || [];
-  const _hasDual = dualFileMode && currentChannel === 'all' && (_mqR.length > 0 || _mqW.length > 0);
+  // Данные каналов для карточки — строим напрямую из salesRetail/salesWholesale
+  // чтобы не зависеть от состояния item.monthlyQty
+  const _r = salesRetail ? extractSalesArrays(salesRetail, e.name, o) : null;
+  const _w = salesWholesale ? extractSalesArrays(salesWholesale, e.name, o) : null;
+  const _mqR = _r ? _r.monthlyQty : (e.monthlyQtyRetail || []);
+  const _mrR = _r ? _r.monthlyRev : (e.monthlyRevRetail || []);
+  const _mqW = _w ? _w.monthlyQty : (e.monthlyQtyWholesale || []);
+  const _mrW = _w ? _w.monthlyRev : (e.monthlyRevWholesale || []);
+  // Суммарные по каналу
+  const _mqAll = o.map(function(_,i){ return (_mqR[i]||0)+(_mqW[i]||0); });
+  const _mrAll = o.map(function(_,i){ return (_mrR[i]||0)+(_mrW[i]||0); });
+  const _hasDual = dualFileMode && currentChannel === 'all' && (_mqR.some(function(v){return v>0;}) || _mqW.some(function(v){return v>0;}));
   let r = 0,
     i = 0,
     g = "";
   for (let t = 0; t < o.length; t++) {
     const n = o[t],
-      // item.monthlyQty уже содержит правильные данные по каналу после applyChannel
-      a = (e.monthlyQty || [])[t] || 0,
-      l = (e.monthlyRev || [])[t] || 0;
+      a = (currentChannel === "retail" ? _mqR : currentChannel === "wholesale" ? _mqW : _mqAll)[t] || 0,
+      l = (currentChannel === "retail" ? _mrR : currentChannel === "wholesale" ? _mrW : _mrAll)[t] || 0;
     ((r += a), (i += l));
     // Получаем остаток — _stockByDate ключи в формате DD.MM.YYYY
     // Конвертируем название месяца "Май 2025 г." → "05.2025" для поиска
