@@ -269,6 +269,10 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
       <div id="dualWholesaleName" style="margin-top:3px;font-size:10px;color:var(--text3);word-break:break-all"></div>
     </div>
   </div>
+  <div id="startAnalysisBtn" style="display:none;text-align:center;margin-bottom:20px">
+    <button class="btn btn-primary" onclick="startAnalysis()" style="padding:10px 32px;font-size:14px">▶ Начать анализ</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">Загружен 1 файл. Можно добавить второй или начать анализ.</div>
+  </div>
   <div style="max-width:560px;margin:0 auto">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:10px">— Введите API ключ для ИИ-функций —</div>
     <div style="display:flex;gap:7px">
@@ -738,6 +742,7 @@ function handleFile(t) {
                           item.totalRevTotal = item.monthlyRevTotal.reduce(function(a,b){return a+b;},0);
                         })),
                         updateChannelUI(),
+                        (function(){ var b=document.getElementById("startAnalysisBtn"); if(b && allItems.length) b.style.display="block"; }()),
                         hideLoading(),
                         (dualFileMode
                           ? null  // остаёмся на экране загрузки, ждём второй файл
@@ -1491,8 +1496,10 @@ function showChart(t) {
         // Нет продаж — берём месяцы из остатков
         Object.keys(e._stockByDate || {}).map(function(k) {
           const parts = k.split(".");
+          if (parts.length < 3) return null;
+          // формат DD.MM.YYYY
           const mn = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-          return mn[parseInt(parts[0])-1] + " " + parts[1] + " г.";
+          return mn[parseInt(parts[1])-1] + " " + parts[2] + " г.";
         }).filter(Boolean),
     l = e._arrInfo,
     c = {};
@@ -1523,16 +1530,25 @@ function showChart(t) {
       a = (e.monthlyQty || [])[t] || 0,
       l = (e.monthlyRev || [])[t] || 0;
     ((r += a), (i += l));
-    // Получаем остаток по ключу месяца
-    const _mkeys = Object.keys(s);
-    const _mvals = Object.values(s);
-    // Ищем совпадение ключа с текущим месяцем
-    const _mmap = {}; _mkeys.forEach(function(k,i){ _mmap[k] = _mvals[i]; });
+    // Получаем остаток — _stockByDate ключи в формате DD.MM.YYYY
+    // Конвертируем название месяца "Май 2025 г." → "05.2025" для поиска
     const h_parts = {Январь:"01",Февраль:"02",Март:"03",Апрель:"04",Май:"05",Июнь:"06",
                     Июль:"07",Август:"08",Сентябрь:"09",Октябрь:"10",Ноябрь:"11",Декабрь:"12"};
     const _ny = n.replace(" г.","").split(" ");
-    const _mkey = h_parts[_ny[0]] ? h_parts[_ny[0]] + "." + _ny[1] : null;
-    const p = _mkey && _mmap[_mkey] !== undefined ? _mmap[_mkey] : (Object.values(s)[t] !== undefined ? Object.values(s)[t] : null),
+    const _monthNum = h_parts[_ny[0]];
+    const _year = _ny[1];
+    // Ищем в _stockByDate запись у которой MM и YYYY совпадают
+    let p = null;
+    if (_monthNum && _year) {
+      const _prefix = _monthNum + "." + _year; // MM.YYYY
+      for (const _dk of Object.keys(s)) {
+        const _dp = _dk.split(".");
+        if (_dp.length === 3 && _dp[1] === _monthNum && _dp[2] === _year) {
+          p = s[_dk]; break;
+        }
+      }
+    }
+    p = p;
       u = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0,
       f = null !== p && u > 0 ? p / u : null,
       v = null !== f ? getStaleCls(f) : "",
@@ -2817,10 +2833,7 @@ function handleDualSecond(file) {
         if (st) st.style.display = 'inline';
       }
       // Переходим к аналитике если уже есть данные
-      if (allItems.length > 0) {
-        document.getElementById('uploadView').style.display = 'none';
-        document.getElementById('mainView').style.display = 'block';
-      }
+      if (allItems.length > 0) { startAnalysis(); }
     } catch(e) { hideLoading(); alert('Ошибка: ' + e.message); }
   };
   reader.readAsArrayBuffer(file);
@@ -2835,6 +2848,12 @@ function setChannel(ch) {
     b.classList.toggle('active', b.dataset.ch === ch);
   });
   applyChannel();
+}
+function startAnalysis() {
+  if (!allItems.length) { alert("Сначала загрузите файл"); return; }
+  document.getElementById("uploadView").style.display = "none";
+  document.getElementById("mainView").style.display = "block";
+  renderAll();
 }
 function setUploadMode(mode) {
   dualFileMode = mode === 'dual';
