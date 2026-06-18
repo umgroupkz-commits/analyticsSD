@@ -1548,8 +1548,7 @@ function showChart(t) {
         }
       }
     }
-    p = p;
-      u = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0,
+    const u = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0,
       f = null !== p && u > 0 ? p / u : null,
       v = null !== f ? getStaleCls(f) : "",
       m = n.replace(" г.", "").replace("2025", "'25").replace("2026", "'26"),
