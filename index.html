@@ -727,6 +727,7 @@ function handleFile(t) {
       (updateLoading("Парсю продажи..."),
         setTimeout(() => {
           const t = parseSales(e.Sheets[n]);
+          if (dualFileMode) salesRetail = t; // сохраняем продажи розницы
           (updateLoading("Парсю остатки..."),
             setTimeout(() => {
               const n = parseStock(e.Sheets[a]);
