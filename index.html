@@ -234,37 +234,43 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 </div>
 <!-- UPLOAD -->
 <div id="uploadView" style="padding:40px 24px">
-  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-       ondragover="event.preventDefault();this.classList.add('drag')"
-       ondragleave="this.classList.remove('drag')"
-       ondrop="event.preventDefault();this.classList.remove('drag');handleFile(event.dataTransfer.files[0])">
-    <div class="upload-icon">📊</div>
-    <div class="upload-title">Загрузить файл отчёта</div>
-    <div class="upload-sub" style="margin-bottom:14px">XLS / XLSX с вкладками «Продажи» и «Остатки»</div>
-    <button class="btn btn-primary" style="pointer-events:none">Выбрать файл</button>
+  <div style="text-align:center;margin-bottom:28px">
+    <div style="font-size:36px;margin-bottom:8px">📊</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px">Аналитика товарных остатков</div>
+    <div style="font-size:12px;color:var(--text2)">Загрузите файлы продаж. Можно только один или оба.</div>
   </div>
-  <div style="text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px">
-    <span style="font-size:12px;color:var(--text2)">Режим загрузки:</span>
-    <button id="modeSingle" class="btn btn-ghost btn-sm active" onclick="setUploadMode('single')">Один файл</button>
-    <button id="modeDual" class="btn btn-ghost btn-sm" onclick="setUploadMode('dual')">Розница + Опт</button>
-  </div>
-  <div id="dualZone" style="display:none;margin-top:12px;text-align:left;max-width:460px;margin-left:auto;margin-right:auto">
-    <div style="margin-bottom:10px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px">📦 Основной файл (Розница)</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Содержит: Продажи розницы + Остатки + Поступление</div>
-      <input type="file" id="fileInputRetail" accept=".xls,.xlsx" onchange="handleDualMain(this.files[0],'retail')" style="font-size:12px;color:var(--text2)">
-      <span id="dualRetailStatus" style="font-size:11px;color:var(--green);margin-left:8px;display:none">✓ Загружен</span>
+  <div style="display:flex;gap:16px;max-width:680px;margin:0 auto 24px">
+    <div id="zoneRetail" style="flex:1;padding:20px 16px;background:var(--surface);border:2px dashed var(--teal);border-radius:10px;text-align:center;transition:background .15s"
+         ondragover="event.preventDefault();document.getElementById('zoneRetail').style.background='var(--surface2)'"
+         ondragleave="document.getElementById('zoneRetail').style.background='var(--surface)'"
+         ondrop="event.preventDefault();document.getElementById('zoneRetail').style.background='var(--surface)';handleDualMain(event.dataTransfer.files[0])">
+      <div style="font-size:28px;margin-bottom:8px">📦</div>
+      <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px">Розница</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.4">Продажи + Остатки + Поступление<br><span style="color:var(--text3)">Основной файл</span></div>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer;border-color:var(--teal);color:var(--teal)">
+        Выбрать файл
+        <input type="file" id="fileInputRetail" accept=".xls,.xlsx" onchange="handleDualMain(this.files[0])" style="display:none">
+      </label>
+      <div id="dualRetailStatus" style="margin-top:10px;font-size:11px;color:var(--green);display:none">✓ Загружен</div>
+      <div id="dualRetailName" style="margin-top:3px;font-size:10px;color:var(--text3);word-break:break-all"></div>
     </div>
-    <div id="dualSecondZone" style="opacity:0.4;pointer-events:none;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:12px;color:#c080ff;font-weight:600;margin-bottom:4px">🏭 Дополнительный файл (Опт)</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Содержит: только лист «Продажи» оптовых продаж</div>
-      <input type="file" id="fileInputWholesale" accept=".xls,.xlsx" onchange="handleDualSecond(this.files[0],'wholesale')" style="font-size:12px;color:var(--text2)">
-      <span id="dualWholesaleStatus" style="font-size:11px;color:var(--green);margin-left:8px;display:none">✓ Загружен</span>
+    <div id="zoneWholesale" style="flex:1;padding:20px 16px;background:var(--surface);border:2px dashed var(--accent2);border-radius:10px;text-align:center;transition:background .15s"
+         ondragover="event.preventDefault();document.getElementById('zoneWholesale').style.background='var(--surface2)'"
+         ondragleave="document.getElementById('zoneWholesale').style.background='var(--surface)'"
+         ondrop="event.preventDefault();document.getElementById('zoneWholesale').style.background='var(--surface)';handleDualSecond(event.dataTransfer.files[0])">
+      <div style="font-size:28px;margin-bottom:8px">🏭</div>
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:4px">Опт</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.4">Только лист «Продажи»<br><span style="color:var(--text3)">Дополнительный файл</span></div>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer;border-color:var(--accent2);color:var(--accent2)">
+        Выбрать файл
+        <input type="file" id="fileInputWholesale" accept=".xls,.xlsx" onchange="handleDualSecond(this.files[0])" style="display:none">
+      </label>
+      <div id="dualWholesaleStatus" style="margin-top:10px;font-size:11px;color:var(--green);display:none">✓ Загружен</div>
+      <div id="dualWholesaleName" style="margin-top:3px;font-size:10px;color:var(--text3);word-break:break-all"></div>
     </div>
   </div>
-  <input type="file" id="fileInput" accept=".xls,.xlsx" onchange="handleFile(this.files[0])">
   <div style="max-width:560px;margin:0 auto">
-    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:14px">— Введите API ключ для ИИ-функций —</div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:10px">— Введите API ключ для ИИ-функций —</div>
     <div style="display:flex;gap:7px">
       <input class="api-input" id="apiKeyUpfront" placeholder="sk-ant-... (Claude API ключ)" style="flex:1;margin:0">
       <button class="btn btn-ai" onclick="saveApiKey()">Сохранить</button>
@@ -272,6 +278,20 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
     <div id="apiKeySaved" style="font-size:10px;color:var(--green);margin-top:5px;display:none">✓ API ключ сохранён</div>
   </div>
 </div>
+<!-- Modal настройки экспорта -->
+<div id="exportConfigModal" style="display:none;position:fixed;inset:0;background:rgba(30,40,70,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:380px;max-width:480px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:14px">📊 Настройка экспорта</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Выберите колонки для экспорта в Excel:</div>
+    <div id="exportColsList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('exportConfigModal').style.display='none'">Отмена</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportResetDefaults()">По умолчанию</button>
+      <button class="btn btn-primary btn-sm" onclick="exportConfirm()">Экспортировать</button>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN -->
 <div id="mainView" style="display:none">
   <div class="tabs-bar" id="tabsBar">
@@ -283,33 +303,41 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
     <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)">⚙ Настройки</button>
   </div>
   <!-- DASHBOARD -->
-  <div class="toolbar" id="mainToolbar">
-        <span class="toolbar-label">Анализ:</span>
-        <button class="btn btn-ghost btn-sm active" id="modeABCD_money" onclick="setMode('ABCD_money')">ABCD ₸</button>
-        <button class="btn btn-ghost btn-sm" id="modeABCD_units" onclick="setMode('ABCD_units')">ABCD шт</button>
-        <button class="btn btn-ghost btn-sm" id="modeABCD_avg" onclick="setMode('ABCD_avg')">ABCD ср/мес</button>
-        <button class="btn btn-ghost btn-sm" id="modeXYZ" onclick="setMode('XYZ')">XYZ</button>
-        <button class="btn btn-ghost btn-sm" id="modeCombo" onclick="setMode('Combo')">ABCD+XYZ</button>
-        <div class="sep"></div>
-        <div id="channelSwitcher" style="display:none;align-items:center;gap:4px">
-          <span class="toolbar-label">Канал:</span>
-          <button class="btn btn-ghost btn-sm btn-channel active" data-ch="all" onclick="setChannel('all')">Все</button>
-          <button class="btn btn-ghost btn-sm btn-channel" data-ch="retail" onclick="setChannel('retail')">Розница</button>
-          <button class="btn btn-ghost btn-sm btn-channel" data-ch="wholesale" onclick="setChannel('wholesale')">Опт</button>
+  <div class="toolbar" id="mainToolbar" style="flex-wrap:wrap;gap:4px 0">
+        <!-- Строка 1: Режим анализа -->
+        <div style="display:flex;align-items:center;gap:4px;width:100%;flex-wrap:wrap">
+          <span class="toolbar-label">Анализ:</span>
+          <button class="btn btn-ghost btn-sm active" id="modeABCD_money" onclick="setMode('ABCD_money')">ABCD ₸</button>
+          <button class="btn btn-ghost btn-sm" id="modeABCD_units" onclick="setMode('ABCD_units')">ABCD шт</button>
+          <button class="btn btn-ghost btn-sm" id="modeABCD_avg" onclick="setMode('ABCD_avg')">ABCD ср/мес</button>
+          <button class="btn btn-ghost btn-sm" id="modeXYZ" onclick="setMode('XYZ')">XYZ</button>
+          <button class="btn btn-ghost btn-sm" id="modeCombo" onclick="setMode('Combo')">ABCD+XYZ</button>
           <div class="sep"></div>
+          <div id="channelSwitcher" style="display:none;align-items:center;gap:4px">
+            <span class="toolbar-label">Канал:</span>
+            <button class="btn btn-ghost btn-sm btn-channel active" data-ch="all" onclick="setChannel('all')">Все</button>
+            <button class="btn btn-ghost btn-sm btn-channel" data-ch="retail" onclick="setChannel('retail')">Розница</button>
+            <button class="btn btn-ghost btn-sm btn-channel" data-ch="wholesale" onclick="setChannel('wholesale')">Опт</button>
+            <div class="sep"></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="selectAll()">☐ Все</button>
+          <span id="selCount" style="font-size:11px;color:var(--text2);margin-left:2px"></span>
+          <button class="btn btn-ghost btn-sm" onclick="deselectAll()">✕ Снять</button>
+          <div class="sep"></div>
+          <button class="btn btn-success btn-sm" onclick="sendToVyvod()">📤 На вывод</button>
+          <button class="btn btn-teal btn-sm" onclick="saveAsReport()">+ Отчёт</button>
+          <div class="sep"></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportMain()">↓ Excel</button>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="selectAll()">☐ Все</button>
-        <button class="btn btn-ghost btn-sm" onclick="deselectAll()">✕ Снять</button>
-        <button class="btn btn-success btn-sm" onclick="sendToVyvod()">📤 На вывод</button>
-        <button class="btn btn-teal btn-sm" onclick="saveAsReport()">+ Отчёт</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteSelected()">✕ Удалить</button>
-        <div class="sep"></div>
-        <button class="btn btn-ai btn-sm" onclick="openAiPanel()">🤖 ИИ-рекомендации</button>
-        <button class="btn btn-orange btn-sm" onclick="formulaAutoVyvod()">⚡ Авто-вывод</button>
-        <button class="btn btn-ghost btn-sm" onclick="deleteZeroStock()" title="Удалить из отчёта все позиции с нулевым остатком и пересчитать">🗑 Удалить нулевые остатки</button>
-        <div class="sep"></div>
-        <button class="btn btn-ghost btn-sm" onclick="toggleShowDeleted()" id="btnShowDeleted" style="display:none">🗑 Удалённые (0)</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportMain()">↓ Excel</button>
+        <!-- Строка 2: Инструменты -->
+        <div style="display:flex;align-items:center;gap:4px;width:100%;flex-wrap:wrap;padding-top:3px;border-top:1px solid var(--border)">
+          <button class="btn btn-ai btn-sm" onclick="openAiPanel()">🤖 ИИ-рекомендации</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--orange);border-color:var(--orange)" onclick="formulaAutoVyvod()">⚡ Авто-вывод</button>
+          <div class="sep"></div>
+          <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteSelected()">✕ Удалить выделенные</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--text3)" onclick="deleteZeroStock()">🗑 Нулевые остатки</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--text3)" id="btnDeleted" onclick="toggleDeleted()">🗑 Удалённые (<span id="deletedCount">0</span>)</button>
+        </div>
       </div>
   
     <div class="dashboard-wrap" id="dashboardWrap">
@@ -412,16 +440,18 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 })();
 let allItems = [],
   displayItems = [],
+  sortedDisplayItems = [],
   vyvodItems = [],
   salesRetail = null,
   salesWholesale = null,
   currentChannel = 'all',
-  dualFileMode = false,
+  dualFileMode = true,
   customReports = [],
   confirmedVyvodIds = new Set(),
+  confirmedReportIds = {},
   currentTab = "main",
   currentMode = "ABCD_money",
-  activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set(), staleMin: null, staleMax: null, ageMin: null, ageMax: null, stockMin: null, stockMax: null },
+  activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set(), staleMin: null, staleMax: null, ageMin: null, ageMax: null, stockMin: null, stockMax: null, lowStockMin: 5 },
   hiddenIds = new Set(),
   selectedIds = new Set(),
   deletedIds = new Set(),
@@ -690,10 +720,23 @@ function handleFile(t) {
                             });
                             const st = document.getElementById('dualRetailStatus');
                             if (st) st.style.display = 'inline';
-                            const sz = document.getElementById('dualSecondZone');
-                            if (sz) { sz.style.opacity = '1'; sz.style.pointerEvents = 'auto'; }
+                            const sn = document.getElementById('dualRetailName');
+                            if (sn && t) sn.textContent = t.name;
+
                           }
                         }()),
+                        // Если опт уже загружен — применяем его данные
+                        (salesWholesale && allItems.forEach(function(item) {
+                          const w = extractSalesArrays(salesWholesale, item.name, item.months);
+                          item.monthlyQtyWholesale = w.monthlyQty;
+                          item.monthlyRevWholesale = w.monthlyRev;
+                          item.totalQtyWholesale = w.monthlyQty.reduce(function(a,b){return a+b;},0);
+                          item.totalRevWholesale = w.monthlyRev.reduce(function(a,b){return a+b;},0);
+                          item.monthlyQtyTotal = item.monthlyQtyRetail.map(function(v,i){return v+(w.monthlyQty[i]||0);});
+                          item.monthlyRevTotal = item.monthlyRevRetail.map(function(v,i){return v+(w.monthlyRev[i]||0);});
+                          item.totalQtyTotal = item.monthlyQtyTotal.reduce(function(a,b){return a+b;},0);
+                          item.totalRevTotal = item.monthlyRevTotal.reduce(function(a,b){return a+b;},0);
+                        })),
                         updateChannelUI(),
                         hideLoading(),
                         (dualFileMode
@@ -1075,6 +1118,9 @@ function itemMatchesFilters(t) {
   if (activeFilters.ageMax !== null && (t.stockAge || 0) > activeFilters.ageMax) return !1;
   if (activeFilters.stockMin !== null && t.currentStock < activeFilters.stockMin) return !1;
   if (activeFilters.stockMax !== null && t.currentStock > activeFilters.stockMax) return !1;
+  if (activeFilters.lowStockMin > 0) {
+    t.lowStockMonths = Object.values(t._stockByDate || {}).filter(function(v){ return v >= 0 && v < activeFilters.lowStockMin; }).length;
+  }
   return !0;
 }
 function getStaleZone(t) {
@@ -1107,7 +1153,9 @@ function toggleFilter(t, e, n) {
 function resetAllFilters() {
   ((autoFilterIds = null),
     (aiFilter = null),
-    (activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set() }),
+    (activeFilters = { cats: new Set(), xyz: new Set(), stale: new Set(), age: new Set(), tags: new Set(),
+      staleMin: null, staleMax: null, ageMin: null, ageMax: null,
+      stockMin: null, stockMax: null, lowStockMin: 5 }),
     document.querySelectorAll(".fchip").forEach((t) => t.classList.remove("active")),
     applyFilters(),
     renderFilterChips(),
@@ -1176,6 +1224,8 @@ function renderFilterChips() {
   n += `<span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.staleMin !== null ? activeFilters.staleMin : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('staleMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.staleMax !== null ? activeFilters.staleMax : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('staleMax',this.value)">`;
   n += '<span class="toolbar-label" style="margin-left:8px">Возраст ост.:</span>';
   n += `<span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.ageMin !== null ? activeFilters.ageMin : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('ageMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999" placeholder="мес" value="${activeFilters.ageMax !== null ? activeFilters.ageMax : ''}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('ageMax',this.value)"> <span class="toolbar-label" style="margin-left:8px">Остаток</span> <span style="color:var(--text3);font-size:11px">от</span> <input type="number" min="0" max="999999" placeholder="шт" value="${activeFilters.stockMin !== null ? activeFilters.stockMin : ''}" style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('stockMin',this.value)"> <span style="color:var(--text3);font-size:11px">до</span> <input type="number" min="0" max="999999" placeholder="шт" value="${activeFilters.stockMax !== null ? activeFilters.stockMax : ''}" style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('stockMax',this.value)">`;
+  n += '<span class="toolbar-label" style="margin-left:8px">Мало на складе &lt;</span> ';
+  n += `<input type="number" min="0" max="999" value="${activeFilters.lowStockMin}" style="width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:1px 4px" oninput="setNumFilter('lowStockMin',this.value)" title="Месяцев с остатком меньше N шт"> <span style="color:var(--text3);font-size:11px">шт</span>`;
 n += '</div><div class="filter-chips" style="border-bottom:none"><span class="toolbar-label">Метки:</span>';
   const o = [
     { k: "Новинка", cls: "tag-new" },
@@ -1386,12 +1436,13 @@ function renderTable() {
   const e = Object.keys(aiRecsMap).length > 0,
     n = (t, e) =>
       `<th onclick="doSort('${t}')" class="${sortCol === t ? "th-sorted" : ""}">${e}${sortCol === t ? (sortDir > 0 ? " ↑" : " ↓") : ""}</th>`;
-  let a = `<table><thead><tr>\n    <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)"></th>\n    ${n("name", "Наименование")}\n    ${n("tags", "Метки")}\n    ${n("cat", "Кат.")}\n    ${n("totalRev", "Выручка ₸")}\n    ${n("totalQty", "Ед. продаж")}\n    ${dualFileMode ? n("totalRevRetail", "Выручка роз.") : ""}\n    ${dualFileMode ? n("totalQtyRetail", "Шт роз.") : ""}\n    ${dualFileMode ? n("totalRevWholesale", "Выручка опт") : ""}\n    ${dualFileMode ? n("totalQtyWholesale", "Шт опт") : ""}\n    ${n("currentStock", "Остаток")}\n    ${n("avgQtyPerMonth", "Ср/мес")}\n    ${n("staleMonths", "Запас")}\n    ${n("stockAge", "Возраст ост.")}\n    ${n("lowStockMonths", "Мало на складе")}\n    <th>Динамика</th>\n    ${e ? "<th>ИИ-рек.</th>" : ""}\n    <th>Действия</th>\n  </tr></thead><tbody>`;
+  let a = `<table><thead><tr>\n    <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)"></th>\n    ${n("name", "Наименование")}\n    ${n("tags", "Метки")}\n    ${n("cat", "Кат.")}\n    ${n("totalRev", "Выручка ₸")}\n    ${n("totalQty", "Ед. продаж")}\n    ${dualFileMode && currentChannel === "all" ? n("totalRevRetail", "Выручка роз.") : ""}\n    ${dualFileMode && currentChannel === "all" ? n("totalQtyRetail", "Шт роз.") : ""}\n    ${dualFileMode && currentChannel === "all" ? n("totalRevWholesale", "Выручка опт") : ""}\n    ${dualFileMode && currentChannel === "all" ? n("totalQtyWholesale", "Шт опт") : ""}\n    ${n("currentStock", "Остаток")}\n    ${n("avgQtyPerMonth", "Ср/мес")}\n    ${n("staleMonths", "Запас")}\n    ${n("stockAge", "Возраст ост.")}\n    ${n("lowStockMonths", "Мало на складе")}\n    <th>Динамика</th>\n    ${e ? "<th>ИИ-рек.</th>" : ""}\n    <th>Действия</th>\n  </tr></thead><tbody>`;
+  sortedDisplayItems = t;
   for (const n of t) {
     const t = selectedIds.has(n.id),
       s = getStaleCls(n.staleMonths),
       o = aiRecsMap[n.id];
-    a += `<tr id="row_${n.id}" class="${t ? "selected" : ""}" onclick="handleRowClick(${n.id},event)">\n      <td style="width:36px;text-align:center"><input type="checkbox" ${t ? "checked" : ""} onclick="event.stopPropagation()" onchange="toggleSel(${n.id},this.checked,event)"></td>\n      <td><div class="name-cell">${escHtml(n.name)}</div></td>\n      <td>${n.tags.map(chipH).join(" ")}${n.isNewItem ? ' <span title="Новинка: появилась в последние ' + CFG.newItemMonths + ' мес. Не включается в авто-вывод. Запас может быть некорректной." style="cursor:help;color:var(--teal);font-size:10px">ℹ</span>' : ""}</td>\n      <td>${getCatLabel(n)}</td>\n      <td class="mono">${fmtM(n.totalRev)}</td>\n      <td class="mono">${fmtN(n.totalQty)}</td>\n      ${dualFileMode ? `<td class="mono" style="color:var(--teal)">${fmtM(n.totalRevRetail||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--teal)">${fmtN(n.totalQtyRetail||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--accent2)">${fmtM(n.totalRevWholesale||0)}</td>` : ""}\n      ${dualFileMode ? `<td class="mono" style="color:var(--accent2)">${fmtN(n.totalQtyWholesale||0)}</td>` : ""}\n      <td class="mono ${0 === n.currentStock ? "num-zero" : ""}">${fmtN(n.currentStock)}</td>\n      <td class="mono">${n.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${s}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(n.staleMonths)}</span></div></td>\n      <td>${renderStockAge(n.stockAge, n.currentStock)}</td>\n      <td class="mono ${n.lowStockMonths > 0 ? 'num-warn' : ''}" title="Мес. с остатком < ${CFG.lowStockThreshold} шт">${n.lowStockMonths > 0 ? n.lowStockMonths + "мес" : "—"}</td>\n      <td onclick="showChart(${n.id})" style="cursor:pointer" title="Нажмите для детальной таблицы">${renderSpark(n.monthlyQty)}</td>\n      ${e ? `<td class="ai-rec-cell">${renderAiRec(o)}</td>` : ""}\n      <td><div class="row-actions">\n        <button class="btn btn-success btn-sm" onclick="sendOneToVyvod(${n.id})" title="На вывод">📤</button>\n        <button class="btn btn-danger btn-sm" onclick="deleteOne(${n.id})" title="Удалить из отчёта">✕</button>\n      </div></td>\n    </tr>`;
+    a += `<tr id="row_${n.id}" class="${t ? "selected" : ""}" onclick="handleRowClick(${n.id},event)">\n      <td style="width:36px;text-align:center"><input type="checkbox" ${t ? "checked" : ""} onmousedown="handleCheckboxClick(${n.id},event)" onclick="event.stopPropagation()" onchange="toggleSel(${n.id},this.checked)"></td>\n      <td><div class="name-cell">${escHtml(n.name)}</div></td>\n      <td>${n.tags.map(chipH).join(" ")}${n.isNewItem ? ' <span title="Новинка: появилась в последние ' + CFG.newItemMonths + ' мес. Не включается в авто-вывод. Запас может быть некорректной." style="cursor:help;color:var(--teal);font-size:10px">ℹ</span>' : ""}</td>\n      <td>${getCatLabel(n)}</td>\n      <td class="mono">${fmtM(n.totalRev)}</td>\n      <td class="mono">${fmtN(n.totalQty)}</td>\n      ${dualFileMode && currentChannel === "all" ? `<td class="mono" style="color:var(--teal)">${fmtM(n.totalRevRetail||0)}</td>` : ""}\n      ${dualFileMode && currentChannel === "all" ? `<td class="mono" style="color:var(--teal)">${fmtN(n.totalQtyRetail||0)}</td>` : ""}\n      ${dualFileMode && currentChannel === "all" ? `<td class="mono" style="color:var(--accent2)">${fmtM(n.totalRevWholesale||0)}</td>` : ""}\n      ${dualFileMode && currentChannel === "all" ? `<td class="mono" style="color:var(--accent2)">${fmtN(n.totalQtyWholesale||0)}</td>` : ""}\n      <td class="mono ${0 === n.currentStock ? "num-zero" : ""}">${fmtN(n.currentStock)}</td>\n      <td class="mono">${n.avgQtyPerMonth.toFixed(1)}</td>\n      <td><div class="stale-bar ${s}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(n.staleMonths)}</span></div></td>\n      <td>${renderStockAge(n.stockAge, n.currentStock)}</td>\n      <td class="mono ${n.lowStockMonths > 0 ? 'num-warn' : ''}" title="Мес. с остатком < ${CFG.lowStockThreshold} шт">${n.lowStockMonths > 0 ? n.lowStockMonths + "мес" : "—"}</td>\n      <td onclick="showChart(${n.id})" style="cursor:pointer" title="Нажмите для детальной таблицы">${renderSpark(n.monthlyQty)}</td>\n      ${e ? `<td class="ai-rec-cell">${renderAiRec(o)}</td>` : ""}\n      <td><div class="row-actions">\n        \n        <button class="btn btn-danger btn-sm" onclick="deleteOne(${n.id})" title="Удалить из отчёта">✕</button>\n      </div></td>\n    </tr>`;
   }
   if (showDeleted && deletedIds.size > 0) {
     const t = allItems.filter((t) => deletedIds.has(t.id));
@@ -1412,7 +1463,10 @@ function showChart(t) {
   const e = allItems.find((e) => e.id === t);
   if (!e) return;
   try {
-  const n = (e.monthlyQtyTotal || e.monthlyQty).filter((t) => t > 0).length,
+  const _chanQty = currentChannel === "retail" && e.monthlyQtyRetail ? e.monthlyQtyRetail :
+    currentChannel === "wholesale" && e.monthlyQtyWholesale ? e.monthlyQtyWholesale :
+    (e.monthlyQtyTotal || e.monthlyQty);
+  const n = _chanQty.filter((t) => t > 0).length,
     a = (e.isNewItem, aiRecsMap[e.id]);
   (a && (a.action, a.text),
     (document.getElementById("chartTitle").textContent = e.name),
@@ -1429,11 +1483,15 @@ function showChart(t) {
       `<span style="color:var(--text3);margin-left:12px">Тек. остаток: </span><strong>${fmtN(e.currentStock)} шт</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Запас: </span><strong class="${getStaleCls(e.staleMonths)} stale-value">${fmtStale(e.staleMonths)}</strong>` +
       `<span style="color:var(--text3);margin-left:12px">Возраст остатка: </span><strong class="${getStaleCls(e.stockAge)} stale-value" title="Сколько месяцев прошло с последнего прихода товара">${0 === e.stockAge ? "&lt;1мес" : e.stockAge + "мес"}</strong>` +
-      (e._arrInfo
-        ? `<span style="color:var(--text3);margin-left:12px">Последний приход: </span><strong>${e._arrInfo.hasAny ? "в периоде поступлений" : "до начала периода (&gt;" + e._arrInfo.totalMonths + "мес назад)"}</strong>`
-        : "")));
+      ""));
   const s = e._stockByDate || {},
-    o = e.months || [],
+    o = (e.months && e.months.length > 0) ? e.months :
+        // Нет продаж — берём месяцы из остатков
+        Object.keys(e._stockByDate || {}).map(function(k) {
+          const parts = k.split(".");
+          const mn = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+          return mn[parseInt(parts[0])-1] + " " + parts[1] + " г.";
+        }).filter(Boolean),
     l = e._arrInfo,
     c = {};
   let d = 0;
@@ -1448,16 +1506,34 @@ function showChart(t) {
         const n = String(t.getUTCMonth() + 1).padStart(2, "0") + "." + t.getUTCFullYear();
         ((c[n] = l.monthlyArr[e] || 0), (d += l.monthlyArr[e] || 0));
       });
+  // Данные каналов для карточки
+  const _mqR = e.monthlyQtyRetail || [];
+  const _mrR = e.monthlyRevRetail || [];
+  const _mqW = e.monthlyQtyWholesale || [];
+  const _mrW = e.monthlyRevWholesale || [];
+  const _hasDual = dualFileMode && currentChannel === 'all' && (_mqR.length > 0 || _mqW.length > 0);
   let r = 0,
     i = 0,
     g = "";
   for (let t = 0; t < o.length; t++) {
     const n = o[t],
-      a = (e.monthlyQtyTotal || e.monthlyQty)[t] || 0,
-      l = (e.monthlyRevTotal || e.monthlyRev)[t] || 0;
+      a = (currentChannel === "retail" && e.monthlyQtyRetail ? e.monthlyQtyRetail :
+           currentChannel === "wholesale" && e.monthlyQtyWholesale ? e.monthlyQtyWholesale :
+           (e.monthlyQtyTotal || e.monthlyQty))[t] || 0,
+      l = (currentChannel === "retail" && e.monthlyRevRetail ? e.monthlyRevRetail :
+           currentChannel === "wholesale" && e.monthlyRevWholesale ? e.monthlyRevWholesale :
+           (e.monthlyRevTotal || e.monthlyRev))[t] || 0;
     ((r += a), (i += l));
-    const d = Object.values(s),
-      p = void 0 !== d[t] ? d[t] : null,
+    // Получаем остаток по ключу месяца
+    const _mkeys = Object.keys(s);
+    const _mvals = Object.values(s);
+    // Ищем совпадение ключа с текущим месяцем
+    const _mmap = {}; _mkeys.forEach(function(k,i){ _mmap[k] = _mvals[i]; });
+    const h_parts = {Январь:"01",Февраль:"02",Март:"03",Апрель:"04",Май:"05",Июнь:"06",
+                    Июль:"07",Август:"08",Сентябрь:"09",Октябрь:"10",Ноябрь:"11",Декабрь:"12"};
+    const _ny = n.replace(" г.","").split(" ");
+    const _mkey = h_parts[_ny[0]] ? h_parts[_ny[0]] + "." + _ny[1] : null;
+    const p = _mkey && _mmap[_mkey] !== undefined ? _mmap[_mkey] : (Object.values(s)[t] !== undefined ? Object.values(s)[t] : null),
       u = e.avgQtyPerMonth > 0 ? e.avgQtyPerMonth : 0,
       f = null !== p && u > 0 ? p / u : null,
       v = null !== f ? getStaleCls(f) : "",
@@ -1582,41 +1658,108 @@ function renderVyvod() {
   }
   ((e += "</tbody></table></div></div>"), (t.innerHTML = e));
 }
-function renderCustomReport(t) {
-  const e = customReports[t];
-  if (!e) return;
+function renderCustomReport(reportIdx) {
+  const rep = customReports[reportIdx];
+  if (!rep) return;
+  if (!confirmedReportIds[reportIdx]) confirmedReportIds[reportIdx] = new Set();
+  const confirmed = confirmedReportIds[reportIdx];
   const n = document.getElementById("tableContainer");
-  let a = `<div class="vyvod-section"><div class="vyvod-header">\n    <div class="vyvod-title">📋 ${escHtml(e.name)}</div>\n    <div class="vyvod-count">${e.items.length}</div>\n    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportCustom(${t})">↓ Excel</button>\n  </div>\n  <div class="table-wrap"><table><thead><tr>\n    <th>Наименование</th><th>Метки</th><th>ABCD ₸</th><th>XYZ</th>\n    <th>Выручка ₸</th><th>Ед. продаж</th><th>Остаток</th><th>Запас</th><th>Динамика</th>\n  </tr></thead><tbody>`;
-  for (const t of e.items) {
-    const e = getStaleCls(t.staleMonths);
-    a += `<tr>\n      <td><div class="name-cell">${escHtml(t.name)}</div></td>\n      <td>${t.tags.map(chipH).join(" ")}</td>\n      <td><span class="badge badge-${t.catABCD_money}">${t.catABCD_money}</span></td>\n      <td><span class="badge badge-${t.catXYZ}">${t.catXYZ}</span></td>\n      <td class="mono">${fmtM(t.totalRev)}</td><td class="mono">${fmtN(t.totalQty)}</td>\n      <td class="mono">${fmtN(t.currentStock)}</td>\n      <td><div class="stale-bar ${e}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(t.staleMonths)}</span></div></td>\n      <td onclick="showChart(${t.id})" style="cursor:pointer">${renderSpark(t.monthlyQty)}</td>\n    </tr>`;
+  const _helpView = document.getElementById("helpView");
+  if (_helpView) _helpView.style.display = "none";
+
+  // Сортировка
+  const sortedItems = [...rep.items].sort((a, b) => {
+    const av = a[vyvodSortCol], bv = b[vyvodSortCol];
+    return typeof av === "number" ? (av - bv) * vyvodSortDir :
+      String(av || "").localeCompare(String(bv || ""), "ru") * vyvodSortDir;
+  });
+
+  let a = `<div class="vyvod-section"><div class="vyvod-header">
+    <div class="vyvod-title">📋 ${escHtml(rep.name)}</div>
+    <div class="vyvod-count">${rep.items.length} позиций</div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="exportCustom(${reportIdx})">↓ Excel</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="removeReport(${reportIdx})">✕ Удалить отчёт</button>
+    </div>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${["name","tags","catABCD_money","catXYZ","totalRev","totalQty","currentStock","avgQtyPerMonth","staleMonths","stockAge"].map((f,i)=>{
+      const labels=["Наименование","Метки","ABCD ₸","XYZ","Выручка ₸","Ед. продаж","Остаток","Ср/мес шт","Запас","Возраст ост."];
+      return f ? `<th style="cursor:pointer" onclick="vyvodSort('${f}')">${labels[i]}${vyvodSortCol===f?(vyvodSortDir>0?" ↑":" ↓"):""}</th>` : `<th>${labels[i]}</th>`;
+    }).join("")}
+    <th>Динамика</th><th>Статус</th>
+  </tr></thead><tbody>`;
+
+  for (const item of sortedItems) {
+    const sc = getStaleCls(item.staleMonths);
+    const isConf = confirmed.has(item.id);
+    a += `<tr class="${isConf ? "confirmed-row" : ""}">
+      <td><div class="name-cell" onclick="showChart(${item.id})" style="cursor:pointer">${escHtml(item.name)}</div></td>
+      <td>${item.tags.map(chipH).join(" ")}</td>
+      <td><span class="badge badge-${item.catABCD_money}">${item.catABCD_money}</span></td>
+      <td><span class="badge badge-${item.catXYZ}">${item.catXYZ}</span></td>
+      <td class="mono">${fmtM(item.totalRev)}</td>
+      <td class="mono">${fmtN(item.totalQty)}</td>
+      <td class="mono">${fmtN(item.currentStock)}</td>
+      <td class="mono">${item.avgQtyPerMonth.toFixed(1)}</td>
+      <td><div class="stale-bar ${sc}"><div class="stale-dot"></div><span class="stale-value">${fmtStale(item.staleMonths)}</span></div></td>
+      <td class="mono ${getStaleCls(item.stockAge)}">${item.stockAge === 0 ? "<1мес" : item.stockAge + "мес"}</td>
+      <td onclick="showChart(${item.id})" style="cursor:pointer">${renderSpark(item.monthlyQty)}</td>
+      <td class="row-actions">
+        ${isConf
+          ? `<span style="padding:3px 9px;border-radius:5px;background:#d4f5e4;border:1px solid #16865a;color:#16865a;font-size:11px;font-weight:700">✓ Подтверждён</span>
+             <button class="btn btn-ghost btn-sm" style="margin-left:4px;font-size:10px" onclick="unconfirmReport(${reportIdx},${item.id})" title="Отменить">↩</button>`
+          : `<button class="btn btn-ghost btn-sm" style="font-size:10px;color:var(--green)" onclick="confirmReport(${reportIdx},${item.id})">✓</button>
+             <button class="btn btn-ghost btn-sm" style="font-size:10px;color:var(--red)" onclick="returnFromReport(${reportIdx},${item.id})">↩ Вернуть</button>`
+        }
+      </td>
+    </tr>`;
   }
-  ((a += "</tbody></table></div></div>"), (n.innerHTML = a));
+  a += "</tbody></table></div></div>";
+  n.innerHTML = a;
 }
+
 function handleRowClick(id, evt) {
-  if (evt.target.type === "checkbox" || evt.target.closest(".row-actions") || evt.target.closest("[onclick]") && evt.target !== evt.currentTarget) return;
+  if (evt.target.type === "checkbox") return;
+  if (evt.target.closest(".row-actions")) return;
+  if (evt.target.tagName === "BUTTON" || evt.target.tagName === "A") return;
   if (evt.shiftKey && lastClickedId !== null) {
-    const ids = displayItems.map(i => i.id);
+    const ids = (sortedDisplayItems.length ? sortedDisplayItems : displayItems).map(i => i.id);
     const a = ids.indexOf(lastClickedId), b = ids.indexOf(id);
-    const [lo, hi] = a < b ? [a, b] : [b, a];
-    const adding = !selectedIds.has(id);
-    for (let k = lo; k <= hi; k++) adding ? selectedIds.add(ids[k]) : selectedIds.delete(ids[k]);
+    if (a >= 0 && b >= 0) {
+      const [lo, hi] = a < b ? [a, b] : [b, a];
+      for (let k = lo; k <= hi; k++) selectedIds.add(ids[k]);
+    }
+    // якорь не меняем
   } else {
     selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+    lastClickedId = id; // якорь только при обычном клике
   }
-  lastClickedId = id;
   renderTable();
+}
+function handleCheckboxClick(id, evt) {
+  if (!evt.shiftKey || lastClickedId === null) return; // обычный клик — пусть onchange обрабатывает
+  evt.preventDefault(); // предотвращаем стандартное поведение чекбокса
+  const ids = (sortedDisplayItems.length ? sortedDisplayItems : displayItems).map(i => i.id);
+  const a = ids.indexOf(lastClickedId), b = ids.indexOf(id);
+  if (a >= 0 && b >= 0) {
+    const [lo, hi] = a < b ? [a, b] : [b, a];
+    for (let k = lo; k <= hi; k++) selectedIds.add(ids[k]);
+    renderTable();
+  }
 }
 function toggleSel(t, e, evt) {
   if (evt && evt.shiftKey && lastClickedId !== null) {
     const ids = displayItems.map(i => i.id);
     const a = ids.indexOf(lastClickedId), b = ids.indexOf(t);
-    const [lo, hi] = a < b ? [a, b] : [b, a];
-    for (let k = lo; k <= hi; k++) e ? selectedIds.add(ids[k]) : selectedIds.delete(ids[k]);
+    if (a >= 0 && b >= 0) {
+      const [lo, hi] = a < b ? [a, b] : [b, a];
+      for (let k = lo; k <= hi; k++) selectedIds.add(ids[k]);
+    }
   } else {
     e ? selectedIds.add(t) : selectedIds.delete(t);
+    lastClickedId = t;
   }
-  if (e) lastClickedId = t;
   renderTable();
 }
 function toggleAll(t) {
@@ -1639,6 +1782,12 @@ function deleteOne(t) {
 }
 function restoreDeleted(t) {
   (deletedIds.delete(t), recomputeCategories(), renderAll());
+}
+function toggleDeleted() {
+  showDeleted = !showDeleted;
+  const t = document.getElementById("btnDeleted");
+  if (t) t.textContent = (showDeleted ? "👁 Скрыть удалённые" : "🗑 Удалённые") + " (" + deletedIds.size + ")";
+  renderTable();
 }
 function deleteSelected() {
   ([...selectedIds].forEach((t) => deletedIds.add(t)), selectedIds.clear(), recomputeCategories(), renderAll());
@@ -1668,10 +1817,10 @@ function toggleShowDeleted() {
     renderTable());
 }
 function updateDeletedBtn() {
-  const t = document.getElementById("btnShowDeleted");
-  t &&
-    ((t.style.display = deletedIds.size > 0 ? "inline" : "none"),
-    (t.textContent = showDeleted ? `🗑 Удалённые (${deletedIds.size})` : `👁 Удалённые скрыты (${deletedIds.size})`));
+  const t = document.getElementById("btnDeleted");
+  const dc = document.getElementById("deletedCount");
+  if (dc) dc.textContent = deletedIds.size;
+  t && (t.style.display = deletedIds.size > 0 ? "inline-flex" : "none");
 }
 function doSort(t) {
   (sortCol === t ? (sortDir *= -1) : ((sortCol = t), (sortDir = -1)), renderTable());
@@ -1696,6 +1845,12 @@ function switchTab(t, e) {
   n && (n.classList.add("active"), n.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }));
   const a = "main" === t,
     s = document.getElementById("dashboardWrap");
+  // Скрываем helpView при переключении вкладок
+  const _hv = document.getElementById("helpView");
+  if (_hv) _hv.style.display = "none";
+  // Показываем tableContainer при любой вкладке кроме help
+  const _tc = document.getElementById("tableContainer");
+  if (_tc && t !== "help") _tc.style.display = "block";
   (s && (s.style.display = a ? "block" : "none"),
     a
       ? renderTable()
@@ -1733,6 +1888,10 @@ function confirmVyvod(t) {
   confirmedVyvodIds.add(t);
   renderVyvod();
 }
+function unconfirmVyvod(t) {
+  confirmedVyvodIds.delete(t);
+  renderVyvod();
+}
 function vyvodSort(col) {
   if (vyvodSortCol === col) { vyvodSortDir *= -1; } else { vyvodSortCol = col; vyvodSortDir = -1; }
   renderVyvod();
@@ -1746,49 +1905,88 @@ function returnFromVyvod(t) {
     renderStats());
 }
 function saveAsReport() {
-  console.log("saveAsReport called, selectedIds:", selectedIds.size);
-  const t = [...selectedIds].map((t) => allItems.find((e) => e.id === t)).filter(Boolean);
-  console.log("items for report:", t.length);
-  t.length
-    ? showModal("Название отчёта", `Будет создан отчёт из ${t.length} позиций`, "Введите название...", (e) => {
-        if (!e) return;
-        try {
-          const n = customReports.length;
-          console.log("Step1: pushing report");
-          customReports.push({ name: e, items: [...t] });
-          console.log("Step2: creating button");
-          const a = document.createElement("button");
-          a.className = "tab-btn report-tab";
-          a.setAttribute("data-tab", "report_" + n);
-          a.textContent = "📋 " + e;
-          a.onclick = function () {
-            switchTab("report_" + n, this);
-          };
-          console.log("Step3: appending to tabsBar");
-          const tb = document.getElementById("tabsBar");
-          if (!tb) {
-            alert("tabsBar not found");
-            return;
-          }
-          const anchor = document.getElementById("reportsAnchor");
-          if (anchor) {
-            tb.insertBefore(a, anchor);
-          } else {
-            tb.appendChild(a);
-          }
-          console.log("Step4: clearing selection");
-          selectedIds.clear();
-          console.log("Step5: switching tab");
-          switchTab("report_" + n, a);
-          console.log("Step6: done");
-        } catch (err) {
-          console.error("REPORT ERROR:", err.message, err);
-        }
-      })
-    : alert("Выберите позиции для отчёта (галочками)");
+  const items = [...selectedIds].map((id) => allItems.find((e) => e.id === id)).filter(Boolean);
+  if (!items.length) { alert("Выберите позиции для отчёта (галочками)"); return; }
+  window._pendingReportItems = items;
+  // Заполняем список существующих отчётов
+  const listEl = document.getElementById("reportExistingList");
+  if (listEl) {
+    if (customReports.length > 0) {
+      listEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:6px">Добавить в существующий:</div>' +
+        customReports.map((r, i) =>
+          `<button class="btn btn-ghost btn-sm" style="display:block;width:100%;text-align:left;margin-bottom:4px;padding:6px 10px" onclick="addToExistingReport(${i})">` +
+          `📋 ${escHtml(r.name)} <span style="color:var(--text3);font-size:10px;margin-left:4px">${r.items.length} поз. · ${r.mode === "move" ? "перенос" : "копия"}</span></button>`
+        ).join("");
+      listEl.style.display = "block";
+    } else {
+      listEl.innerHTML = "";
+      listEl.style.display = "none";
+    }
+  }
+  const ni = document.getElementById("reportNameInput");
+  if (ni) ni.value = "";
+  if (document.getElementById("reportModeCopy")) document.getElementById("reportModeCopy").checked = true;
+  document.getElementById("reportCreateModal").style.display = "flex";
 }
-function removeReport(t, e) {
-  ((customReports[t] = null), e.remove(), switchTab("main", document.querySelector("[data-tab=main]")));
+
+function addToExistingReport(idx) {
+  const items = window._pendingReportItems || [];
+  const rep = customReports[idx];
+  if (!rep) return;
+  const existIds = new Set(rep.items.map(i => i.id));
+  const newItems = items.filter(i => !existIds.has(i.id));
+  rep.items.push(...newItems);
+  if (rep.mode === "move") { newItems.forEach(item => deletedIds.add(item.id)); renderAll(); }
+  selectedIds.clear();
+  document.getElementById("reportCreateModal").style.display = "none";
+  window._pendingReportItems = null;
+  renderTable();
+}
+
+
+function _createReport(name, mode, items) {
+  const n = customReports.length;
+  confirmedReportIds[n] = new Set();
+  customReports.push({ name: name, items: [...items], mode: mode });
+  if (mode === "move") {
+    items.forEach(item => deletedIds.add(item.id));
+    renderAll();
+  }
+  const a = document.createElement("button");
+  a.className = "tab-btn report-tab";
+  a.setAttribute("data-tab", "report_" + n);
+  a.textContent = "📋 " + name;
+  a.onclick = function () { switchTab("report_" + n, this); };
+  const tb = document.getElementById("tabsBar");
+  const anchor = document.getElementById("reportsAnchor");
+  if (anchor) tb.insertBefore(a, anchor); else tb.appendChild(a);
+  selectedIds.clear();
+  document.getElementById("reportCreateModal").style.display = "none";
+  window._pendingReportItems = null;
+  renderTable();
+}
+
+function submitReportCreate() {
+  const name = document.getElementById("reportNameInput").value.trim();
+  if (!name) { alert("Введите название"); return; }
+  const mode = document.getElementById("reportModeMove").checked ? "move" : "copy";
+  document.getElementById("reportCreateModal").style.display = "none";
+  _createReport(name, mode, window._pendingReportItems || []);
+  window._pendingReportItems = null;
+}
+
+function removeReport(idx) {
+  if (!confirm("Удалить отчёт? Перенесённые позиции вернутся в таблицу.")) return;
+  const rep = customReports[idx];
+  if (rep && rep.mode === "move") {
+    rep.items.forEach(item => deletedIds.delete(item.id));
+    renderAll();
+  }
+  customReports[idx] = null;
+  delete confirmedReportIds[idx];
+  const tabBtn = document.querySelector(`[data-tab="report_${idx}"]`);
+  if (tabBtn) tabBtn.remove();
+  switchTab("main", document.querySelector("[data-tab=main]"));
 }
 function deleteZeroStock() {
   const t = allItems.filter((t) => !deletedIds.has(t.id) && 0 === t.currentStock && !t.isNewItem);
@@ -2060,73 +2258,153 @@ function calcTrend(t) {
   return n > 1.1 * e ? "рост" : n < 0.9 * e ? "падение" : "стабильно";
 }
 async function exportMain() {
-  exportXLSX(
-    displayItems.filter((t) => !hiddenIds.has(t.id)),
-    `Отчёт_${currentMode}_${dtStr()}`,
-  );
+  openExportModal(displayItems.filter((t) => !hiddenIds.has(t.id)), `Отчёт_${currentMode}_${dtStr()}`);
 }
 function exportVyvod() {
-  exportXLSX(vyvodItems, `На_вывод_${dtStr()}`);
+  openExportModal(vyvodItems, `На_вывод_${dtStr()}`);
+}
+function confirmReport(reportIdx, itemId) {
+  if (!confirmedReportIds[reportIdx]) confirmedReportIds[reportIdx] = new Set();
+  confirmedReportIds[reportIdx].add(itemId);
+  renderCustomReport(reportIdx);
+}
+function unconfirmReport(reportIdx, itemId) {
+  if (confirmedReportIds[reportIdx]) confirmedReportIds[reportIdx].delete(itemId);
+  renderCustomReport(reportIdx);
+}
+function returnFromReport(reportIdx, itemId) {
+  if (confirmedReportIds[reportIdx] && confirmedReportIds[reportIdx].has(itemId)) return;
+  const rep = customReports[reportIdx];
+  if (!rep) return;
+  rep.items = rep.items.filter(i => i.id !== itemId);
+  // Если перенос — возвращаем в таблицу
+  if (rep.mode === "move") { deletedIds.delete(itemId); renderAll(); }
+  renderCustomReport(reportIdx);
 }
 function exportCustom(t) {
   const e = customReports[t];
-  e && exportXLSX(e.items, `${e.name}_${dtStr()}`);
+  e && openExportModal(e.items, `${e.name}_${dtStr()}`);
 }
 function dtStr() {
   const t = new Date();
   return `${t.getDate().toString().padStart(2, "0")}.${(t.getMonth() + 1).toString().padStart(2, "0")}.${t.getFullYear()}`;
 }
-function exportXLSX(t, e) {
-  if (!t.length) return void alert("Нет данных");
-  const n = XLSX.utils.book_new(),
-    a = t.map((t) => {
-      const e = aiRecsMap[t.id];
-      return [
-        t.name,
-        t.tags.join(", "),
-        Math.round(t.totalRev),
-        Math.round(t.totalQty),
-        t.currentStock,
-        parseFloat(t.avgQtyPerMonth.toFixed(2)),
-        t.staleMonths >= 999 ? "нет продаж" : parseFloat(t.staleMonths.toFixed(1)),
-        t.stockAge || 0,
-        aiRecsMap[t.id]?.action || "",
-        aiRecsMap[t.id]?.text || "",
-        ...(t.monthlyQty || [])
-      ];
-    }),
-    s = XLSX.utils.aoa_to_sheet([
-      [
-        "Наименование",
-        "Метки",
-        "Выручка ₸",
-        "Ед. продаж",
-        "Остаток",
-        "Ср/мес шт",
-        "Запас мес",
-        "Возраст остатка мес",
-        "ИИ-действие",
-        "ИИ-рекомендация",
-        ...t[0] ? t[0].months || [] : [],
-      ],
-      ...a,
-    ]);
-  (s["!cols"] = [
-    { wch: 45 },
-    { wch: 20 },
-    { wch: 16 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 12 },
-    { wch: 14 },
-    { wch: 12 },
-    { wch: 24 },
-    ...(t[0] ? (t[0].months || []).map(() => ({ wch: 8 })) : []),
-  ]);
+// Конфиг колонок экспорта
+const EXPORT_COLS = [
+  { id: "name",     label: "Наименование",    def: true,  get: (t) => t.name },
+  { id: "tags",     label: "Метки",           def: true,  get: (t) => t.tags.join(", ") },
+  { id: "rev",      label: "Выручка ₸",       def: true,  get: (t) => Math.round(t.totalRev) },
+  { id: "qty",      label: "Ед. продаж",      def: true,  get: (t) => Math.round(t.totalQty) },
+  { id: "stock",    label: "Остаток",         def: true,  get: (t) => t.currentStock },
+  { id: "avgqty",   label: "Ср/мес шт",       def: true,  get: (t) => parseFloat(t.avgQtyPerMonth.toFixed(2)) },
+  { id: "stale",    label: "Запас мес",        def: true,  get: (t) => t.staleMonths >= 999 ? "нет продаж" : parseFloat(t.staleMonths.toFixed(1)) },
+  { id: "age",      label: "Возраст остатка",  def: true,  get: (t) => t.stockAge || 0 },
+  { id: "abcd",     label: "ABCD ₸",           def: false, get: (t) => t.catABCD_money },
+  { id: "xyz",      label: "XYZ",              def: false, get: (t) => t.catXYZ },
+  { id: "cv",       label: "Коэф. вариации",  def: false, get: (t) => parseFloat((t.cv||0).toFixed(2)) },
+  { id: "aiact",    label: "ИИ-действие",      def: false, get: (t) => aiRecsMap[t.id]?.action || "" },
+  { id: "airec",    label: "ИИ-рекомендация",  def: false, get: (t) => aiRecsMap[t.id]?.text || "" },
+  { id: "monthly",  label: "Динамика по месяцам", def: true, get: null }, // специальная
+];
+
+function getExportConfig() {
+  try {
+    const saved = localStorage.getItem("atoExportCols");
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return EXPORT_COLS.reduce((a, c) => { a[c.id] = c.def; return a; }, {});
+}
+
+function saveExportConfig(cfg) {
+  try { localStorage.setItem("atoExportCols", JSON.stringify(cfg)); } catch(e) {}
+}
+
+let _exportTarget = null; // { items, filename }
+
+function exportMain() {
+  _exportTarget = { items: displayItems, filename: "АТО_" + dtStr() };
+  openExportModal();
+}
+
+function exportVyvod() {
+  _exportTarget = { items: vyvodItems, filename: "На_вывод_" + dtStr() };
+  openExportModal();
+}
+
+function exportCustom(t) {
+  const rep = customReports[t];
+  if (!rep) return;
+  _exportTarget = { items: rep.items, filename: rep.name + "_" + dtStr() };
+  openExportModal();
+}
+
+function openExportModal(items, filename) {
+  if (items && filename) _exportTarget = { items, filename };
+
+  const cfg = getExportConfig();
+  const list = document.getElementById("exportColsList");
+  if (list) {
+    list.innerHTML = EXPORT_COLS.map(c =>
+      `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;padding:4px 0">
+        <input type="checkbox" id="exp_${c.id}" ${cfg[c.id] ? "checked" : ""}>
+        ${c.label}
+      </label>`
+    ).join("");
+  }
+  document.getElementById("exportConfigModal").style.display = "flex";
+}
+
+function exportResetDefaults() {
+  EXPORT_COLS.forEach(c => {
+    const el = document.getElementById("exp_" + c.id);
+    if (el) el.checked = c.def;
+  });
+}
+
+function exportConfirm() {
+  const cfg = {};
+  EXPORT_COLS.forEach(c => {
+    const el = document.getElementById("exp_" + c.id);
+    cfg[c.id] = el ? el.checked : c.def;
+  });
+  saveExportConfig(cfg);
+  document.getElementById("exportConfigModal").style.display = "none";
+  if (_exportTarget) {
+    exportXLSX(_exportTarget.items, _exportTarget.filename, cfg);
+    _exportTarget = null;
+  }
+}
+
+function exportXLSX(t, e, cfg) {
+  if (!t || !t.length) return void alert("Нет данных");
+  if (!cfg) cfg = getExportConfig();
+  const activeCols = EXPORT_COLS.filter(c => cfg[c.id] && c.id !== "monthly");
+  const withMonthly = cfg["monthly"] !== false;
+  // Месяцы
+  const _refItem = t.reduce((a, b) => ((b.months||[]).length > (a.months||[]).length ? b : a), t[0]);
+  const _months = _refItem ? (_refItem.months || []) : [];
+  // Заголовки
+  const headers = [...activeCols.map(c => c.label), ...(withMonthly ? _months : [])];
+  // Данные
+  const rows = t.map((item) => {
+    const mq = item.monthlyQty || [];
+    const mqPadded = withMonthly ? _months.map((_, i) => mq[i] || 0) : [];
+    return [...activeCols.map(c => c.get(item)), ...mqPadded];
+  });
+  const n = XLSX.utils.book_new();
+  const s = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  // Ширины
+  const colWidths = [
+    ...activeCols.map(c => ({
+      wch: c.id==="name"?45 : c.id==="tags"?20 : c.id==="airec"?28 : 12
+    })),
+    ...(withMonthly ? _months.map(() => ({ wch: 8 })) : [])
+  ];
+  s["!cols"] = colWidths;
   XLSX.utils.book_append_sheet(n, s, "Данные");
   XLSX.writeFile(n, e + ".xlsx");
 }
+
 function showModal(t, e, n, a) {
   ((modalCallback = a),
     (document.getElementById("modalTitle").textContent = t),
@@ -2490,62 +2768,66 @@ function renderHelp() {
     }
   }
 }
-function handleDualMain(file, mainChannel) {
+function handleDualMain(file) {
   if (!file) return;
-  // Помечаем что основной файл = розница
-  salesRetail = null; salesWholesale = null;
-  const status = document.getElementById('dualRetailStatus');
+  salesRetail = null;
+  // Показываем статус
+  const st = document.getElementById('dualRetailStatus');
+  const sn = document.getElementById('dualRetailName');
+  if (sn) sn.textContent = file.name;
+  // Загружаем как полный файл — берём продажи, остатки, поступления
   handleFile(file);
-  // После handleFile allItems будут заполнены; помечаем продажи как розницу
-  // Это делается через onFileLoaded callback
-  window._dualMainChannel = mainChannel;
-  window._dualMainFile = file;
 }
-function handleDualSecond(file, secondChannel) {
-  if (!file || !allItems.length) { alert('Сначала загрузите основной файл (Розница)'); return; }
-  showLoading('Читаю файл ' + (secondChannel === 'wholesale' ? 'опта' : 'розницы') + '...');
+function handleDualSecond(file) {
+  if (!file) return;
+  const st = document.getElementById('dualWholesaleStatus');
+  const sn = document.getElementById('dualWholesaleName');
+  if (sn) sn.textContent = file.name;
+  showLoading('Читаю файл опта...');
   const reader = new FileReader();
   reader.onload = function(ev) {
     try {
       const wb = XLSX.read(ev.target.result, { type: 'array', cellDates: true });
       const shName = findSheet(wb, ['Продажи', 'продажи', 'Sales']);
       if (!shName) { hideLoading(); alert('Не найден лист «Продажи»'); return; }
-      const sales = parseSales(wb.Sheets[shName]);
-      if (secondChannel === 'wholesale') salesWholesale = sales;
-      else salesRetail = sales;
-      // Заполняем данные канала для всех позиций
-      allItems.forEach(function(item) {
-        const nm = item.name, mos = item.months;
-        const w = extractSalesArrays(salesWholesale, nm, mos);
-        item.monthlyQtyWholesale = w.monthlyQty;
-        item.monthlyRevWholesale = w.monthlyRev;
-        item.totalQtyWholesale = w.monthlyQty.reduce(function(a,b){return a+b;},0);
-        item.totalRevWholesale = w.monthlyRev.reduce(function(a,b){return a+b;},0);
-        // Розница = всё что было (Total) минус опт
-        if (!item.monthlyQtyRetail) {
-          item.monthlyQtyRetail = item.monthlyQtyTotal.map(function(v,i){return Math.max(0,v-(w.monthlyQty[i]||0));});
-          item.monthlyRevRetail = item.monthlyRevTotal.map(function(v,i){return Math.max(0,v-(w.monthlyRev[i]||0));});
-          item.totalQtyRetail = item.monthlyQtyRetail.reduce(function(a,b){return a+b;},0);
-          item.totalRevRetail = item.monthlyRevRetail.reduce(function(a,b){return a+b;},0);
-        }
-      });
-      hideLoading();
-      const st = document.getElementById('dualWholesaleStatus');
-      if (st) { st.style.display = 'inline'; }
-      updateChannelUI();
-      applyChannel();
-      // Оба файла загружены — переходим к аналитике
-      document.getElementById('uploadView').style.display = 'none';
-      document.getElementById('mainView').style.display = 'block';
+      salesWholesale = parseSales(wb.Sheets[shName]);
+      if (allItems.length > 0) {
+        // Обновляем данные опта для всех позиций
+        allItems.forEach(function(item) {
+          const nm = item.name, mos = item.months;
+          const w = extractSalesArrays(salesWholesale, nm, mos);
+          item.monthlyQtyWholesale = w.monthlyQty;
+          item.monthlyRevWholesale = w.monthlyRev;
+          item.totalQtyWholesale = w.monthlyQty.reduce(function(a,b){return a+b;},0);
+          item.totalRevWholesale = w.monthlyRev.reduce(function(a,b){return a+b;},0);
+          // Розница = то что было загружено первым файлом (уже в retail)
+          // Total = retail + wholesale
+          item.monthlyQtyTotal = item.monthlyQtyRetail.map(function(v,i){return v+(w.monthlyQty[i]||0);});
+          item.monthlyRevTotal = item.monthlyRevRetail.map(function(v,i){return v+(w.monthlyRev[i]||0);});
+          item.totalQtyTotal = item.monthlyQtyTotal.reduce(function(a,b){return a+b;},0);
+          item.totalRevTotal = item.monthlyRevTotal.reduce(function(a,b){return a+b;},0);
+        });
+        hideLoading();
+        if (st) st.style.display = 'inline';
+        updateChannelUI();
+        applyChannel();
+      } else {
+        // Розница ещё не загружена — сохраняем данные, покажем после загрузки розницы
+        hideLoading();
+        if (st) st.style.display = 'inline';
+      }
+      // Переходим к аналитике если уже есть данные
+      if (allItems.length > 0) {
+        document.getElementById('uploadView').style.display = 'none';
+        document.getElementById('mainView').style.display = 'block';
+      }
     } catch(e) { hideLoading(); alert('Ошибка: ' + e.message); }
   };
   reader.readAsArrayBuffer(file);
 }
-
 function updateChannelUI() {
   const el = document.getElementById('channelSwitcher');
-  const hasDual = dualFileMode && (salesRetail !== null || salesWholesale !== null);
-  if (el) el.style.display = hasDual ? 'flex' : 'none';
+  if (el) el.style.display = allItems.length > 0 ? 'flex' : 'none';
 }
 function setChannel(ch) {
   currentChannel = ch;
@@ -2560,7 +2842,7 @@ function setUploadMode(mode) {
   document.getElementById('modeDual').classList.toggle('active', dualFileMode);
   const uz = document.getElementById('uploadZone');
   const dz = document.getElementById('dualZone');
-  if (uz) uz.style.display = dualFileMode ? 'none' : 'block';
+  if (uz) uz.style.display = dualFileMode ? 'none' : 'flex';
   if (dz) dz.style.display = dualFileMode ? 'block' : 'none';
 }
 function resetApp() {
@@ -2592,7 +2874,7 @@ function resetApp() {
     (document.getElementById("fileInputRetail") && (document.getElementById("fileInputRetail").value = "")),
     (document.getElementById("fileInputWholesale") && (document.getElementById("fileInputWholesale").value = "")),
     (document.getElementById("dualZone") && (document.getElementById("dualZone").style.display = "none")),
-    (document.getElementById("singleZone") && (document.getElementById("singleZone").style.display = "block")),
+    (document.getElementById("uploadZone") && (document.getElementById("uploadZone").style.display = "flex")),
     document.querySelectorAll(".report-tab").forEach((t) => t.remove()));
 }
 function fmtM(t) {
